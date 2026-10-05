@@ -40,3 +40,6 @@ yarn-error.log*
 
 # Proyect context
 .proyect
+
+# Prompt
+prompt.md

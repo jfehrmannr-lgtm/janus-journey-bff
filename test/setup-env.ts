@@ -1,0 +1,4 @@
+process.env.BETTER_AUTH_ISSUER ??= 'https://auth.example.com'
+process.env.BETTER_AUTH_JWKS_URL ??= 'https://auth.example.com/.well-known/jwks.json'
+process.env.MS_USERS_BASE_URL ??= 'http://localhost:4001'
+process.env.MS_USERS_TIMEOUT_MS ??= '5000'
