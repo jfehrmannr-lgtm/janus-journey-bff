@@ -1,115 +1,204 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Janus Journey BFF
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+The Janus Journey Backend for Frontend (BFF) is the authenticated backend
+boundary consumed by Janus Journey clients.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+It accepts client requests, validates Better Auth JWTs, extracts the
+authenticated identity, and delegates User operations to `ms-users`. The BFF
+does not own User persistence or User domain business rules.
 
-## Description
+## BFF status
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The current BFF includes:
 
-## Project setup
+- Bearer JWT authentication through Better Auth JWKS validation.
+- JWT signature, expiration, issuer, and audience validation.
+- A reusable authenticated identity guard based on the JWT `sub` claim.
+- User CRUD routes delegated to `ms-users`.
+- Forwarding of User collection query parameters.
+- Downstream status, response body, and selected headers preservation.
+- Swagger/OpenAPI documentation at `/docs` and `/docs-json`.
+- Jest unit and e2e tests.
 
-```bash
-$ npm install
+The current phase intentionally does **not** include:
+
+- Direct database access.
+- User persistence or User domain logic.
+- Journey, Folder, Task, or Feature Flag operations.
+- Token issuance, refresh, or Better Auth session management.
+
+## Architecture and responsibility
+
+```text
+Janus clients
+    │
+    ▼
+NestJS BFF :5000
+    │
+    ├── Better Auth JWT validation
+    ├── Authenticated identity extraction
+    └── REST client boundary
+            │
+            ▼
+      ms-users :4001
 ```
 
-## Compile and run the project
+The BFF trusts only the validated JWT subject as the authenticated identity. It
+forwards that identity to `ms-users` through the internal
+`x-authenticated-subject` request header. `ms-users` does not validate JWTs.
+
+### User routes
+
+The BFF exposes the following authenticated routes:
+
+| Method   | Route        | Responsibility                                      |
+| -------- | ------------ | --------------------------------------------------- |
+| `POST`   | `/users`     | Create a User through `ms-users`.                   |
+| `GET`    | `/users`     | List Users and forward collection query parameters. |
+| `GET`    | `/users/:id` | Retrieve a User through `ms-users`.                 |
+| `PATCH`  | `/users/:id` | Update a User through `ms-users`.                   |
+| `DELETE` | `/users/:id` | Delete a User through `ms-users`.                   |
+
+The BFF intentionally keeps the request body contract open while `ms-users`
+owns concrete User DTO validation and persistence rules.
+
+## Technology stack
+
+The BFF uses:
+
+- **Node.js**
+- **NestJS**
+- **TypeScript**
+- **REST**
+- **Better Auth JWT validation through `jose`**
+- **NestJS HTTP client** for downstream requests
+- **Swagger/OpenAPI** for API documentation
+- **Jest** and **Supertest** for tests
+- **ESLint**, **Oxlint**, and **Prettier** for code quality
+
+## Requirements
+
+Before installing the project, make sure the following tools are available:
+
+- Node.js 22 or a compatible current Node.js release.
+- npm.
+- A running Better Auth-compatible issuer exposing a JWKS endpoint.
+- A running `ms-users` service for integrated User requests.
+
+## Installation
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone <repository-url>
+cd janus-journey-bff
+npm install
 ```
 
-## Run tests
+Create a local environment file from the example:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
+On Windows PowerShell:
 
-When you're ready to deploy your NestJS application to production, see the [NestJS deployment documentation](https://docs.nestjs.com/deployment).
+```powershell
+Copy-Item .env.example .env
+```
 
-## Observability
+Configure the environment values:
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+```dotenv
+PORT=5000
+BETTER_AUTH_ISSUER=http://localhost:3000
+BETTER_AUTH_JWKS_URL=http://localhost:3000/api/auth/jwks
+MS_USERS_BASE_URL=http://localhost:4001
+MS_USERS_TIMEOUT_MS=5000
+```
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+Do not commit `.env` or real credentials.
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+## Development
 
-To add it to this project:
+Start the BFF:
 
 ```bash
-$ npm install @nestjs/observe
+npm run start:dev
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+The BFF is available at:
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+- API: [http://localhost:5000](http://localhost:5000)
+- Swagger UI: [http://localhost:5000/docs](http://localhost:5000/docs)
+- OpenAPI JSON: [http://localhost:5000/docs-json](http://localhost:5000/docs-json)
 
-## Resources
+Requests to authenticated routes must include:
 
-Check out a few resources that may come in handy when working with NestJS:
+```http
+Authorization: Bearer <better-auth-jwt>
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+The JWT must use `janus-bff` as its audience and contain the authenticated user
+identity in `sub`.
 
-## Support
+## Useful commands
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# Run the development server
+npm run start:dev
 
-## Stay in touch
+# Run ESLint
+npm run lint
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# Run Oxlint
+npm run lint:oxlint
 
-## License
+# Run unit tests
+npm run test
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# Run e2e tests
+npm run test:e2e
+
+# Run tests with coverage
+npm run test:cov
+
+# Check formatting
+npm run prettier:check
+
+# Format the repository
+npm run prettier:fix
+
+# Create a production build
+npm run build
+
+# Start the production server after building
+npm run start:prod
+```
+
+## Source structure
+
+```text
+src/
+├── auth/       # JWT validation, guards, identity extraction, and auth types
+├── config/     # Environment and Swagger configuration
+└── users/      # User controller, application service, and ms-users client
+```
+
+The BFF follows the flow:
+
+```text
+Controller → BFF/Application Service → Microservice Client
+```
+
+## Contribution guidelines
+
+When extending the BFF:
+
+- Keep authentication at the BFF boundary.
+- Use the validated JWT `sub` as the authenticated identity.
+- Do not trust request bodies, route parameters, query parameters, or custom
+  headers as proof of authentication.
+- Keep domain persistence and domain business rules in the owning microservice.
+- Use DTO validation for client-facing transport data.
+- Prefer existing dependencies and established project conventions.
+
+Meaningful completed changes are recorded in [`AIChangelog.md`](./AIChangelog.md).
