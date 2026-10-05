@@ -6,7 +6,7 @@ import { AppModule } from './../src/app.module.js'
 import { JwtVerifierService } from '../src/auth/services/jwt-verifier.service.js'
 import { setupSwagger } from '../src/config/swagger.config.js'
 import { MsUsersClient } from '../src/users/clients/ms-users.client.js'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 
 interface SwaggerDocumentShape {
   readonly components: {
@@ -43,9 +43,9 @@ interface SwaggerParameterShape {
 
 describe('Authenticated User flow (e2e)', () => {
   let app: INestApplication<App>
-  const verify = vi.fn()
-  const findById = vi.fn()
-  const findAll = vi.fn()
+  const verify = jest.fn()
+  const findById = jest.fn()
+  const findAll = jest.fn()
 
   beforeEach(async () => {
     verify.mockReset()

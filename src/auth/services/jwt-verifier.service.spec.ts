@@ -1,17 +1,15 @@
 import { ConfigService } from '@nestjs/config'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 
-const { createRemoteJWKSetMock, jwtVerifyMock } = vi.hoisted(() => ({
-  createRemoteJWKSetMock: vi.fn(() => 'remote-jwks'),
-  jwtVerifyMock: vi.fn()
-}))
+const createRemoteJWKSetMock = jest.fn(() => 'remote-jwks')
+const jwtVerifyMock = jest.fn()
 
-vi.mock('jose', () => ({
+jest.unstable_mockModule('jose', () => ({
   createRemoteJWKSet: createRemoteJWKSetMock,
   jwtVerify: jwtVerifyMock
 }))
 
-import { JwtVerifierService } from './jwt-verifier.service.js'
+const { JwtVerifierService } = await import('./jwt-verifier.service.js')
 
 describe('JwtVerifierService', () => {
   const config = {

@@ -1,9 +1,9 @@
 import { HttpClient, HttpTimeoutError } from '@nestjs/http-client'
 import { ConfigService } from '@nestjs/config'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, jest } from '@jest/globals'
 import { MsUsersClient } from './ms-users.client.js'
 
-const createClient = (request: ReturnType<typeof vi.fn>): MsUsersClient => {
+const createClient = (request: ReturnType<typeof jest.fn>): MsUsersClient => {
   const http = { request } as unknown as HttpClient
   const config = {
     getOrThrow: (key: string) =>
@@ -18,7 +18,7 @@ const createClient = (request: ReturnType<typeof vi.fn>): MsUsersClient => {
 
 describe('MsUsersClient', () => {
   it('passes normal query params to the generic collection REST boundary', async () => {
-    const request = vi.fn().mockResolvedValue({
+    const request = jest.fn().mockResolvedValue({
       data: new Response(JSON.stringify({ userId: 'user-1' }), {
         headers: { 'content-type': 'application/json' },
         status: 200
@@ -47,7 +47,7 @@ describe('MsUsersClient', () => {
   })
 
   it('does not add query parameters to an item request', async () => {
-    const request = vi.fn().mockResolvedValue({
+    const request = jest.fn().mockResolvedValue({
       data: new Response(JSON.stringify({ userId: 'user-1' }), {
         headers: { 'content-type': 'application/json' },
         status: 200
@@ -61,7 +61,7 @@ describe('MsUsersClient', () => {
   })
 
   it('preserves a downstream not-found response', async () => {
-    const request = vi.fn().mockResolvedValue({
+    const request = jest.fn().mockResolvedValue({
       data: new Response(JSON.stringify({ message: 'not found' }), {
         headers: { 'content-type': 'application/json' },
         status: 404
@@ -75,7 +75,7 @@ describe('MsUsersClient', () => {
   })
 
   it('maps a downstream timeout to a gateway timeout', async () => {
-    const request = vi
+    const request = jest
       .fn()
       .mockRejectedValue(new HttpTimeoutError({ method: 'GET', timeoutMs: 5000, url: 'http://localhost:4001/users' }))
     const client = createClient(request)

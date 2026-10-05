@@ -63,6 +63,20 @@
 - Follow the repository's established dependency version conventions.
 - Do not add dependencies for functionality already covered by the existing stack.
 
+## AI Changelog
+
+- After completing any task that modifies the project, append an entry to `AIChangelog.md`.
+- Follow the format and rules defined inside `AIChangelog.md`.
+- Add the newest entry at the top.
+- Every completed change must have a unique sequential identifier using the format `#JANUS-BFF-XXXX`.
+- Never reuse, modify, or reorder an existing change identifier.
+- Determine the next identifier from the highest existing `JANUS-BFF` identifier in `AIChangelog.md`.
+- Every entry must include a descriptive title and a `Work` summary describing the workflow used (e.g. `Plan / Build`) and the purpose of the task.
+- Document the meaningful completed changes, including relevant UI, behavior, components, assets, configuration, architectural decisions, and implementation boundaries.
+- Log completed work only; do not include unfinished plans, discussions, or unanswered prompts.
+- Do not reduce substantial work to generic one-line summaries.
+- Do not document trivial implementation details or unchanged behavior.
+
 ## Repository Conventions
 
 - Follow the existing configuration for:
