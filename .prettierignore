@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.git/
+.husky/_/
+AGENTS.md
+package-lock.json
+*.svg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.webp
