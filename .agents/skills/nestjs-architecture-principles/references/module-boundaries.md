@@ -20,7 +20,7 @@ A module boundary is strong when:
 @Module({
   controllers: [OrdersController],
   providers: [PlaceOrder, OrderRepository],
-  exports: [PlaceOrder],
+  exports: [PlaceOrder]
 })
 export class OrdersModule {}
 ```
@@ -76,9 +76,9 @@ The root module and feature modules assemble implementations. Keep environment a
         config.getOrThrow('PAYMENTS_MODE') === 'live'
           ? new StripePaymentGateway(config.getOrThrow('STRIPE_KEY'))
           : new FakePaymentGateway(),
-      inject: [ConfigService],
-    },
-  ],
+      inject: [ConfigService]
+    }
+  ]
 })
 export class OrdersModule {}
 ```

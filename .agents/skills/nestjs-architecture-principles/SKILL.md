@@ -116,16 +116,16 @@ Use [references/architecture-review.md](references/architecture-review.md). Repo
 
 ## Reference routing
 
-| Task | Load |
-| --- | --- |
-| Apply or review the consolidated architecture rules | [architecture-rules.md](references/architecture-rules.md) |
-| Choose modular monolith, layers, hexagonal, CQRS, or services | [architecture-ladder.md](references/architecture-ladder.md) |
-| Design feature modules, exports, ownership, or remove cycles | [module-boundaries.md](references/module-boundaries.md) |
-| Define provider tokens, ports, scopes, factories, or dynamic modules | [dependency-injection.md](references/dependency-injection.md) |
-| Define database ownership, repositories, migrations, transactions, or ORM boundaries | [database-orm.md](references/database-orm.md) |
-| Decide service extraction, distributed data ownership, contracts, or messaging semantics | [microservices.md](references/microservices.md) |
-| Apply KISS, YAGNI, DRY, cohesion, coupling, and dependency rules | [engineering-principles.md](references/engineering-principles.md) |
-| Audit a repository or plan an incremental migration | [architecture-review.md](references/architecture-review.md) |
+| Task                                                                                     | Load                                                              |
+| ---------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Apply or review the consolidated architecture rules                                      | [architecture-rules.md](references/architecture-rules.md)         |
+| Choose modular monolith, layers, hexagonal, CQRS, or services                            | [architecture-ladder.md](references/architecture-ladder.md)       |
+| Design feature modules, exports, ownership, or remove cycles                             | [module-boundaries.md](references/module-boundaries.md)           |
+| Define provider tokens, ports, scopes, factories, or dynamic modules                     | [dependency-injection.md](references/dependency-injection.md)     |
+| Define database ownership, repositories, migrations, transactions, or ORM boundaries     | [database-orm.md](references/database-orm.md)                     |
+| Decide service extraction, distributed data ownership, contracts, or messaging semantics | [microservices.md](references/microservices.md)                   |
+| Apply KISS, YAGNI, DRY, cohesion, coupling, and dependency rules                         | [engineering-principles.md](references/engineering-principles.md) |
+| Audit a repository or plan an incremental migration                                      | [architecture-review.md](references/architecture-review.md)       |
 
 ## Expected response
 

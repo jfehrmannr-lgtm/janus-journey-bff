@@ -14,23 +14,23 @@ Use this template as a contract, not as filler. Remove empty sections only when 
 
 ## Quality gates
 
-| Gate | Result | Evidence |
-| --- | --- | --- |
-| TypeScript/syntax | pass/fail/not run | `<command>` or reason |
-| Lint | pass/fail/not run | `<command>` or reason |
-| Tests | pass/fail/not run | `<command>` or reason |
-| Semantic audit | pass/fail/partial | reviewed files and exclusions |
+| Gate              | Result            | Evidence                      |
+| ----------------- | ----------------- | ----------------------------- |
+| TypeScript/syntax | pass/fail/not run | `<command>` or reason         |
+| Lint              | pass/fail/not run | `<command>` or reason         |
+| Tests             | pass/fail/not run | `<command>` or reason         |
+| Semantic audit    | pass/fail/partial | reviewed files and exclusions |
 
 ## Finding summary
 
-| Owner | Critical | High | Medium | Low |
-| --- | ---: | ---: | ---: | ---: |
-| Toolchain | 0 | 0 | 0 | 0 |
-| Architecture | 0 | 0 | 0 | 0 |
-| OOP/design | 0 | 0 | 0 | 0 |
-| Runtime | 0 | 0 | 0 | 0 |
-| Security | 0 | 0 | 0 | 0 |
-| Testing | 0 | 0 | 0 | 0 |
+| Owner        | Critical | High | Medium | Low |
+| ------------ | -------: | ---: | -----: | --: |
+| Toolchain    |        0 |    0 |      0 |   0 |
+| Architecture |        0 |    0 |      0 |   0 |
+| OOP/design   |        0 |    0 |      0 |   0 |
+| Runtime      |        0 |    0 |      0 |   0 |
+| Security     |        0 |    0 |      0 |   0 |
+| Testing      |        0 |    0 |      0 |   0 |
 
 ## Confirmed findings
 
@@ -44,9 +44,9 @@ Use this template as a contract, not as filler. Remove empty sections only when 
 
 ## Needs verification
 
-| Candidate | Why unconfirmed | Smallest next check |
-| --- | --- | --- |
-| <signal> | <missing evidence> | <read-only or controlled check> |
+| Candidate | Why unconfirmed    | Smallest next check             |
+| --------- | ------------------ | ------------------------------- |
+| <signal>  | <missing evidence> | <read-only or controlled check> |
 
 ## Healthy patterns
 

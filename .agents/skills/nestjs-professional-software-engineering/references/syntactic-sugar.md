@@ -44,8 +44,8 @@ await client.execute({
   operation: 'capture',
   paymentId,
   idempotencyKey,
-  timeoutMs: 3_000,
-});
+  timeoutMs: 3_000
+})
 ```
 
 A safe convenience method can preserve the same contract:
@@ -53,8 +53,8 @@ A safe convenience method can preserve the same contract:
 ```ts
 await client.capture(paymentId, {
   idempotencyKey,
-  timeoutMs: 3_000,
-});
+  timeoutMs: 3_000
+})
 ```
 
 The convenience method should delegate to the explicit operation, return the same result type, preserve error and cancellation behavior, and expose options that materially affect correctness. It should not silently invent an idempotency key or retry a payment with an unknown outcome.

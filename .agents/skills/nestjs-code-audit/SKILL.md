@@ -59,15 +59,15 @@ Codex does not provide arbitrary bare user-defined commands such as `/Nestjs aud
 
 ### Actions
 
-| Action | Coverage |
-| --- | --- |
+| Action           | Coverage                                                                                            |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
 | `full` (default) | Safe static gates plus architecture, object design, runtime, security, testing, and delivery review |
-| `static` | Syntax, TypeScript, lint, configuration, and directly related toolchain failures |
-| `architecture` | Modules, dependencies, data/write ownership, transactions, events, ports, and service boundaries |
-| `design` | Responsibilities, invariants, coupling, abstractions, patterns, and refactoring risks |
-| `runtime` | Nest lifecycle, API/errors, reliability, performance evidence, health, shutdown, and delivery |
-| `security` | Input, identity/access, tenant isolation, secrets, output, abuse controls, and security tests |
-| `tests` | Test-layer choice, missing boundary coverage, flaky lifecycle risks, and safely runnable checks |
+| `static`         | Syntax, TypeScript, lint, configuration, and directly related toolchain failures                    |
+| `architecture`   | Modules, dependencies, data/write ownership, transactions, events, ports, and service boundaries    |
+| `design`         | Responsibilities, invariants, coupling, abstractions, patterns, and refactoring risks               |
+| `runtime`        | Nest lifecycle, API/errors, reliability, performance evidence, health, shutdown, and delivery       |
+| `security`       | Input, identity/access, tenant isolation, secrets, output, abuse controls, and security tests       |
+| `tests`          | Test-layer choice, missing boundary coverage, flaky lifecycle risks, and safely runnable checks     |
 
 An optional repository-relative scope follows the action. If the first argument is not a recognized action, treat all arguments as the scope/focus and use `full`. For focused actions, load only the relevant lanes in the bundled semantic reference, plus any available specialist guidance needed for a cross-lane blocker. Report only the requested scope.
 
@@ -151,9 +151,9 @@ If there are no confirmed problems, say so and list the checks that were not run
 
 ## Reference routing
 
-| Need | Load |
-| --- | --- |
-| Review architecture, objects, runtime, and healthy controls without sibling skills | [semantic-review.md](references/semantic-review.md) |
-| Decide which checks may run without modifying the project | [check-policy.md](references/check-policy.md) |
-| Assign and deduplicate findings across the three domain skills | [finding-ownership.md](references/finding-ownership.md) |
-| Format the final audit consistently | [report-template.md](references/report-template.md) |
+| Need                                                                               | Load                                                    |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Review architecture, objects, runtime, and healthy controls without sibling skills | [semantic-review.md](references/semantic-review.md)     |
+| Decide which checks may run without modifying the project                          | [check-policy.md](references/check-policy.md)           |
+| Assign and deduplicate findings across the three domain skills                     | [finding-ownership.md](references/finding-ownership.md) |
+| Format the final audit consistently                                                | [report-template.md](references/report-template.md)     |

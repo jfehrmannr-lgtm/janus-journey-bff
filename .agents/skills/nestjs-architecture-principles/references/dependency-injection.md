@@ -4,28 +4,28 @@ Use Nest's container as the composition mechanism. Dependency inversion is about
 
 ## Choose a provider form intentionally
 
-| Provider form | Use when |
-| --- | --- |
-| Class provider | One concrete implementation is the local default |
-| `useValue` | Supplying configuration, a constant, or a test double |
-| `useClass` | Selecting an implementation behind a stable token |
-| `useExisting` | Providing an alias to the same singleton instance |
-| `useFactory` | Construction depends on runtime configuration or other providers |
+| Provider form  | Use when                                                         |
+| -------------- | ---------------------------------------------------------------- |
+| Class provider | One concrete implementation is the local default                 |
+| `useValue`     | Supplying configuration, a constant, or a test double            |
+| `useClass`     | Selecting an implementation behind a stable token                |
+| `useExisting`  | Providing an alias to the same singleton instance                |
+| `useFactory`   | Construction depends on runtime configuration or other providers |
 
 TypeScript interfaces do not exist at runtime, so they cannot be constructor tokens by themselves. Prefer a named `Symbol` for an application-owned port:
 
 ```typescript
-export const PAYMENT_GATEWAY = Symbol('orders.payment-gateway');
+export const PAYMENT_GATEWAY = Symbol('orders.payment-gateway')
 
 export interface PaymentGateway {
-  authorize(input: AuthorizePayment): Promise<Authorization>;
+  authorize(input: AuthorizePayment): Promise<Authorization>
 }
 
 @Injectable()
 export class PlaceOrder {
   constructor(
     @Inject(PAYMENT_GATEWAY)
-    private readonly payments: PaymentGateway,
+    private readonly payments: PaymentGateway
   ) {}
 }
 ```

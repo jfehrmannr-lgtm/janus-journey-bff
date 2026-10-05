@@ -2,16 +2,16 @@
 
 Assign one primary owner to each root cause. Supporting skills may add impact or verification requirements, but they do not create duplicate findings.
 
-| Evidence | Primary owner | Supporting handoff |
-| --- | --- | --- |
-| Module cycle, deep import, broad export, cross-feature write | Architecture | OOP may shape collaborators; Features may test wiring/runtime impact |
-| Domain/application imports NestJS, ORM, transport, or vendor types | Architecture | OOP reviews the abstraction; Features owns boundary mapping |
-| God service, hidden dependency, repeated conditional variation, invariant leakage | OOP/design | Architecture confirms capability ownership; Features confirms lifecycle |
-| Guard/pipe/interceptor/filter misuse, public error or API contract | Runtime | OOP models internal failure types; Architecture owns transaction effects |
-| Validation, authorization, tenant escape, secret or response leakage | Security | Architecture establishes trust/data ownership; OOP encapsulates policy |
-| Missing boundary test, wrong test layer, flaky lifecycle cleanup | Testing | Architecture owns boundary assertions; OOP owns object behavior |
-| Compiler parser/type error or ESLint diagnostic | Toolchain | Route the remedy to another owner only when the root cause is semantic |
-| Query latency, event-loop blocking, capacity, retry, queue, shutdown | Runtime | Architecture decides service/data boundary changes if measurements justify them |
+| Evidence                                                                          | Primary owner | Supporting handoff                                                              |
+| --------------------------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------- |
+| Module cycle, deep import, broad export, cross-feature write                      | Architecture  | OOP may shape collaborators; Features may test wiring/runtime impact            |
+| Domain/application imports NestJS, ORM, transport, or vendor types                | Architecture  | OOP reviews the abstraction; Features owns boundary mapping                     |
+| God service, hidden dependency, repeated conditional variation, invariant leakage | OOP/design    | Architecture confirms capability ownership; Features confirms lifecycle         |
+| Guard/pipe/interceptor/filter misuse, public error or API contract                | Runtime       | OOP models internal failure types; Architecture owns transaction effects        |
+| Validation, authorization, tenant escape, secret or response leakage              | Security      | Architecture establishes trust/data ownership; OOP encapsulates policy          |
+| Missing boundary test, wrong test layer, flaky lifecycle cleanup                  | Testing       | Architecture owns boundary assertions; OOP owns object behavior                 |
+| Compiler parser/type error or ESLint diagnostic                                   | Toolchain     | Route the remedy to another owner only when the root cause is semantic          |
+| Query latency, event-loop blocking, capacity, retry, queue, shutdown              | Runtime       | Architecture decides service/data boundary changes if measurements justify them |
 
 ## Root-cause examples
 

@@ -6,13 +6,13 @@ Encapsulation protects behavior and invariants, not merely fields.
 
 ```typescript
 class Order {
-  private status: 'draft' | 'confirmed' = 'draft';
+  private status: 'draft' | 'confirmed' = 'draft'
 
   confirm() {
     if (this.status !== 'draft') {
-      throw new OrderAlreadyConfirmed();
+      throw new OrderAlreadyConfirmed()
     }
-    this.status = 'confirmed';
+    this.status = 'confirmed'
   }
 }
 ```
@@ -27,7 +27,7 @@ An abstraction should hide a decision likely to change or a boundary worth testi
 
 ```typescript
 interface Clock {
-  now(): Date;
+  now(): Date
 }
 ```
 
@@ -42,7 +42,7 @@ Prefer collaborating policies:
 class ShippingQuoteService {
   constructor(
     @Inject(SHIPPING_POLICY)
-    private readonly policy: ShippingPolicy,
+    private readonly policy: ShippingPolicy
   ) {}
 }
 ```
@@ -63,11 +63,15 @@ Use polymorphism for real variation:
 
 ```typescript
 interface PricingPolicy {
-  calculate(order: PricedOrder): Money;
+  calculate(order: PricedOrder): Money
 }
 
-class StandardPricing implements PricingPolicy { /* ... */ }
-class PartnerPricing implements PricingPolicy { /* ... */ }
+class StandardPricing implements PricingPolicy {
+  /* ... */
+}
+class PartnerPricing implements PricingPolicy {
+  /* ... */
+}
 ```
 
 Keep the selection at the composition root or a focused factory. Avoid selecting a strategy from unvalidated user input.
@@ -93,8 +97,8 @@ First implement the direct case. When repeated changes reveal a stable operation
 ```typescript
 const TAX_POLICIES = new Map<Region, TaxPolicy>([
   ['eu', euTaxPolicy],
-  ['us', usTaxPolicy],
-]);
+  ['us', usTaxPolicy]
+])
 ```
 
 Do not replace a small stable conditional with a class hierarchy solely to avoid modifying a file.
@@ -117,11 +121,11 @@ Design ports from consumer use:
 
 ```typescript
 interface FindOrder {
-  byId(id: OrderId): Promise<Order | null>;
+  byId(id: OrderId): Promise<Order | null>
 }
 
 interface SaveOrder {
-  save(order: Order): Promise<void>;
+  save(order: Order): Promise<void>
 }
 ```
 

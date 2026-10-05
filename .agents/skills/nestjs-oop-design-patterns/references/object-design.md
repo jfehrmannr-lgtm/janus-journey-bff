@@ -11,13 +11,13 @@ class Subscription {
   constructor(
     readonly id: SubscriptionId,
     private plan: Plan,
-    private state: SubscriptionState,
+    private state: SubscriptionState
   ) {}
 
   upgradeTo(next: Plan) {
-    if (!this.state.canChangePlan()) throw new PlanChangeNotAllowed();
-    if (!next.isUpgradeFrom(this.plan)) throw new PlanDowngradeRejected();
-    this.plan = next;
+    if (!this.state.canChangePlan()) throw new PlanChangeNotAllowed()
+    if (!next.isUpgradeFrom(this.plan)) throw new PlanDowngradeRejected()
+    this.plan = next
   }
 }
 ```
@@ -46,17 +46,17 @@ Weak candidates:
 class Money {
   private constructor(
     readonly minorUnits: bigint,
-    readonly currency: Currency,
+    readonly currency: Currency
   ) {}
 
   static of(minorUnits: bigint, currency: Currency) {
-    if (minorUnits < 0n) throw new NegativeMoney();
-    return new Money(minorUnits, currency);
+    if (minorUnits < 0n) throw new NegativeMoney()
+    return new Money(minorUnits, currency)
   }
 
   add(other: Money) {
-    if (other.currency !== this.currency) throw new CurrencyMismatch();
-    return Money.of(this.minorUnits + other.minorUnits, this.currency);
+    if (other.currency !== this.currency) throw new CurrencyMismatch()
+    return Money.of(this.minorUnits + other.minorUnits, this.currency)
   }
 }
 ```
@@ -105,8 +105,8 @@ Map at boundaries:
 ```typescript
 const command: PlaceOrderInput = {
   customerId: CustomerId.parse(dto.customerId),
-  lines: dto.lines.map(toOrderLine),
-};
+  lines: dto.lines.map(toOrderLine)
+}
 ```
 
 Avoid universal mapping frameworks when explicit mapping is short and captures important semantics.

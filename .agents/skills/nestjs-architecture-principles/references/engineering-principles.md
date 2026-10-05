@@ -59,10 +59,10 @@ Avoid navigation chains that make one feature understand another feature's objec
 
 ```typescript
 // Fragile knowledge of several internals
-order.customer.account.plan.canUse(feature);
+order.customer.account.plan.canUse(feature)
 
 // Owner answers the business question
-order.canUseFeature(feature);
+order.canUseFeature(feature)
 ```
 
 Do not apply this as a ban on ordinary property access in data-transfer structures.
@@ -91,13 +91,13 @@ Prefer changes that are reversible and independently deployable:
 
 ## Principle conflict examples
 
-| Tension | Decision test |
-| --- | --- |
-| DRY vs coupling | Share stable knowledge, not coincidental shape |
-| KISS vs reliability | Include known failure behavior; omit speculative machinery |
-| Encapsulation vs reporting | Expose a purpose-built query/read model, not internal persistence |
-| Strict layering vs delivery | Layer only the complex capability; keep simple features compact |
-| Consistency vs autonomy | Choose explicit transactions or eventual consistency from product needs |
-| Reuse vs ownership | Prefer duplicated adapters over shared business write ownership |
+| Tension                     | Decision test                                                           |
+| --------------------------- | ----------------------------------------------------------------------- |
+| DRY vs coupling             | Share stable knowledge, not coincidental shape                          |
+| KISS vs reliability         | Include known failure behavior; omit speculative machinery              |
+| Encapsulation vs reporting  | Expose a purpose-built query/read model, not internal persistence       |
+| Strict layering vs delivery | Layer only the complex capability; keep simple features compact         |
+| Consistency vs autonomy     | Choose explicit transactions or eventual consistency from product needs |
+| Reuse vs ownership          | Prefer duplicated adapters over shared business write ownership         |
 
 The goal is local reasoning, safe change, and observable behavior—not maximum compliance with terminology.

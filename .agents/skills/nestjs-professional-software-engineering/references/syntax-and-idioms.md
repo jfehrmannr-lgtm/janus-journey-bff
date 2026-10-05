@@ -35,16 +35,13 @@ Use the framework's supported composition and lifecycle mechanisms before creati
 Prefer a plain function over a fluent builder when there is one required operation:
 
 ```ts
-const quote = calculateQuote(input);
+const quote = calculateQuote(input)
 ```
 
 A builder may help when ordered or optional construction rules are genuinely complex and validation can occur at one boundary:
 
 ```ts
-const request = PaymentRequest.create(reference)
-  .withAmount(amount)
-  .withIdempotencyKey(key)
-  .build();
+const request = PaymentRequest.create(reference).withAmount(amount).withIdempotencyKey(key).build()
 ```
 
 The builder must not hide that `build()` performs network I/O; creation should remain local and effects should use an explicit verb such as `send()` or `execute()`.

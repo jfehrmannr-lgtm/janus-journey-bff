@@ -52,14 +52,14 @@ Measured latency optimization belongs to the Features, Scaling, and Performance 
 
 ## Test the boundary
 
-| Risk | Minimum useful test |
-| --- | --- |
-| Domain/application policy | Unit test with an owned fake or stub |
-| ORM mapping and query shape | Integration test against the supported database engine |
-| Constraints and transaction behavior | Integration/concurrency test with realistic conflicts |
-| Migration | Upgrade test from the previous schema plus representative data |
-| Public read/write contract | Transport or contract test through the owning feature |
-| Pool/capacity limit | Load test with production-like replica and data assumptions |
+| Risk                                 | Minimum useful test                                            |
+| ------------------------------------ | -------------------------------------------------------------- |
+| Domain/application policy            | Unit test with an owned fake or stub                           |
+| ORM mapping and query shape          | Integration test against the supported database engine         |
+| Constraints and transaction behavior | Integration/concurrency test with realistic conflicts          |
+| Migration                            | Upgrade test from the previous schema plus representative data |
+| Public read/write contract           | Transport or contract test through the owning feature          |
+| Pool/capacity limit                  | Load test with production-like replica and data assumptions    |
 
 Do not use a mock ORM as proof that SQL, indexes, constraints, isolation, or migrations work.
 

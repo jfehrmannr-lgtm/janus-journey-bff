@@ -87,19 +87,19 @@ Use [references/pattern-catalog.md](references/pattern-catalog.md) and [referenc
 
 Treat pattern catalogs as discovery aids, not implementation checklists. Architecture styles, framework lifecycle mechanisms, provider lifetimes, and GoF object patterns solve different kinds of problems even when an article groups them together. Popularity, familiarity, or a claim that a pattern is "scalable" is not evidence that the current repository needs it.
 
-| Signal | Consider | Avoid when |
-| --- | --- | --- |
-| Same operation, real interchangeable algorithms | Strategy | One stable algorithm |
-| Construction varies by configuration/type | Factory | Constructor is already simple |
-| Complex construction has ordered or optional validated steps | Builder | An object literal or constructor stays clear |
-| Vendor model leaks into application code | Adapter | Library API is already isolated at the edge |
-| Abstraction and implementation have two independent variation axes | Bridge | Adapter or Strategy handles the only variation |
-| Complex subsystem needs a narrow entry point | Facade/application service | It becomes an unrelated god service |
-| A stable workflow has a few deliberate extension steps | Template Method or composed pipeline | Inheritance would be the only reason to use it |
-| Cross-cutting request behavior | Interceptor, guard, pipe, filter | Core business policy belongs in a domain/application object |
-| Independent reactions to a completed fact | Domain/integration event | Caller requires an immediate transactional result |
-| Explicit use-case messages add value | Command/query handler | Basic CRUD gains only indirection |
-| Reliable event publication with a DB write | Transactional outbox | Best-effort in-process notification is sufficient |
+| Signal                                                             | Consider                             | Avoid when                                                  |
+| ------------------------------------------------------------------ | ------------------------------------ | ----------------------------------------------------------- |
+| Same operation, real interchangeable algorithms                    | Strategy                             | One stable algorithm                                        |
+| Construction varies by configuration/type                          | Factory                              | Constructor is already simple                               |
+| Complex construction has ordered or optional validated steps       | Builder                              | An object literal or constructor stays clear                |
+| Vendor model leaks into application code                           | Adapter                              | Library API is already isolated at the edge                 |
+| Abstraction and implementation have two independent variation axes | Bridge                               | Adapter or Strategy handles the only variation              |
+| Complex subsystem needs a narrow entry point                       | Facade/application service           | It becomes an unrelated god service                         |
+| A stable workflow has a few deliberate extension steps             | Template Method or composed pipeline | Inheritance would be the only reason to use it              |
+| Cross-cutting request behavior                                     | Interceptor, guard, pipe, filter     | Core business policy belongs in a domain/application object |
+| Independent reactions to a completed fact                          | Domain/integration event             | Caller requires an immediate transactional result           |
+| Explicit use-case messages add value                               | Command/query handler                | Basic CRUD gains only indirection                           |
+| Reliable event publication with a DB write                         | Transactional outbox                 | Best-effort in-process notification is sufficient           |
 
 Before applying a pattern, state the problem, why a direct solution is insufficient, and the added operational or cognitive cost.
 
@@ -141,13 +141,13 @@ Do not force:
 
 ## Reference routing
 
-| Task | Load |
-| --- | --- |
-| Apply encapsulation, composition, polymorphism, or SOLID | [oop-solid.md](references/oop-solid.md) |
-| Design entities, value objects, policies, services, and DTO mapping | [object-design.md](references/object-design.md) |
-| Select creational, structural, behavioral, persistence, event, or reliability patterns | [pattern-catalog.md](references/pattern-catalog.md) |
+| Task                                                                                    | Load                                                              |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| Apply encapsulation, composition, polymorphism, or SOLID                                | [oop-solid.md](references/oop-solid.md)                           |
+| Design entities, value objects, policies, services, and DTO mapping                     | [object-design.md](references/object-design.md)                   |
+| Select creational, structural, behavioral, persistence, event, or reliability patterns  | [pattern-catalog.md](references/pattern-catalog.md)               |
 | Map patterns to Nest modules, providers, guards, pipes, interceptors, filters, and CQRS | [nestjs-native-patterns.md](references/nestjs-native-patterns.md) |
-| Diagnose smells and choose a safe refactor | [smells-refactoring.md](references/smells-refactoring.md) |
+| Diagnose smells and choose a safe refactor                                              | [smells-refactoring.md](references/smells-refactoring.md)         |
 
 ## Expected response
 

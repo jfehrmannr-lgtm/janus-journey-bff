@@ -117,16 +117,16 @@ If two services share tables, require synchronized releases, or call each other 
 
 ## Decision table
 
-| Requirement | Default response |
-| --- | --- |
-| Small team, one deployable, mostly CRUD | Feature-module modular monolith |
-| Rich invariants and multiple adapters | Layer the affected feature |
-| Vendor API changes often | Add an application-owned port and infrastructure adapter |
-| Read model differs radically from writes | Consider CQRS for that bounded capability |
-| CPU-heavy job needs independent capacity | Separate worker deployment before a business microservice split |
-| One feature needs independent ownership and data | Consider service extraction after contract design |
-| Circular module graph | Repair ownership; do not jump to microservices |
-| Need faster delivery | Reduce boundaries and coordination, not necessarily add infrastructure |
+| Requirement                                      | Default response                                                       |
+| ------------------------------------------------ | ---------------------------------------------------------------------- |
+| Small team, one deployable, mostly CRUD          | Feature-module modular monolith                                        |
+| Rich invariants and multiple adapters            | Layer the affected feature                                             |
+| Vendor API changes often                         | Add an application-owned port and infrastructure adapter               |
+| Read model differs radically from writes         | Consider CQRS for that bounded capability                              |
+| CPU-heavy job needs independent capacity         | Separate worker deployment before a business microservice split        |
+| One feature needs independent ownership and data | Consider service extraction after contract design                      |
+| Circular module graph                            | Repair ownership; do not jump to microservices                         |
+| Need faster delivery                             | Reduce boundaries and coordination, not necessarily add infrastructure |
 
 ## Architecture decision record
 

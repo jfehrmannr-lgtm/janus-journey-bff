@@ -22,7 +22,7 @@ The categories can cooperate, but they are not interchangeable. Do not install p
 
 ```typescript
 export interface FraudPolicy {
-  evaluate(input: FraudInput): Promise<FraudDecision>;
+  evaluate(input: FraudInput): Promise<FraudDecision>
 }
 ```
 
@@ -37,13 +37,13 @@ Keep selection separate from execution. A strategy should not inspect its own ty
 class ExporterFactory {
   constructor(
     private readonly csv: CsvExporter,
-    private readonly pdf: PdfExporter,
+    private readonly pdf: PdfExporter
   ) {}
 
   for(format: ExportFormat): Exporter {
-    if (format === 'csv') return this.csv;
-    if (format === 'pdf') return this.pdf;
-    throw new UnsupportedExportFormat(format);
+    if (format === 'csv') return this.csv
+    if (format === 'pdf') return this.pdf
+    throw new UnsupportedExportFormat(format)
   }
 }
 ```

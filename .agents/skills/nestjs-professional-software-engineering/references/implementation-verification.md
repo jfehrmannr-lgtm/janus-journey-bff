@@ -19,14 +19,14 @@ For a public API, persistence, authentication, concurrency, deployment, migratio
 
 ## Test selection
 
-| Risk | Minimum useful evidence |
-| --- | --- |
-| Pure deterministic logic | Unit tests with boundaries and invalid input |
-| Public API or library | Contract tests, types/compilation, realistic usage examples |
-| Adapter or persistence | Integration test against realistic semantics |
-| Authorization or sensitive data | Allowed and denied cases, ownership checks, non-disclosure |
-| Concurrency or retries | Duplicate, timeout, cancellation, ordering, and cleanup cases |
-| Migration or deployment | Compatibility sequence, dry run or staging evidence, success and rollback signals |
+| Risk                            | Minimum useful evidence                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| Pure deterministic logic        | Unit tests with boundaries and invalid input                                      |
+| Public API or library           | Contract tests, types/compilation, realistic usage examples                       |
+| Adapter or persistence          | Integration test against realistic semantics                                      |
+| Authorization or sensitive data | Allowed and denied cases, ownership checks, non-disclosure                        |
+| Concurrency or retries          | Duplicate, timeout, cancellation, ordering, and cleanup cases                     |
+| Migration or deployment         | Compatibility sequence, dry run or staging evidence, success and rollback signals |
 
 Tests should validate observable behavior. Avoid coupling them to private methods or incidental object structure.
 

@@ -10,6 +10,7 @@
     "build": "nest build",
     "format": "prettier --write .",
     "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",

@@ -154,8 +154,8 @@ Do not return only a proposed snippet when the user requested implementation.
 
 ## Reference routing
 
-| Task | Load |
-| --- | --- |
-| Choose idiomatic, version-compatible syntax | [syntax-and-idioms.md](references/syntax-and-idioms.md) |
-| Design or review syntactic sugar and public API ergonomics | [syntactic-sugar.md](references/syntactic-sugar.md) |
-| Scope implementation and select verification depth | [implementation-verification.md](references/implementation-verification.md) |
+| Task                                                       | Load                                                                        |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Choose idiomatic, version-compatible syntax                | [syntax-and-idioms.md](references/syntax-and-idioms.md)                     |
+| Design or review syntactic sugar and public API ergonomics | [syntactic-sugar.md](references/syntactic-sugar.md)                         |
+| Scope implementation and select verification depth         | [implementation-verification.md](references/implementation-verification.md) |
