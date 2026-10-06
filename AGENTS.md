@@ -92,8 +92,10 @@
 ## Agent Behavior
 
 - Inspect the existing implementation before modifying it.
-- Read the relevant `.project` knowledge before making architectural or domain decisions.
-- Treat `.project` as project context and architectural knowledge, not as implementation code.
+- Read the relevant knowledge from the root-level `project/` directory before making architectural or domain decisions.
+- Treat the root `project/` directory as the centralized source of project context, contracts, architecture, and domain knowledge shared by all Janus Journey repositories.
+- Do not expect, create, or maintain repository-specific `project/` directories.
+- Treat `project/` as project knowledge, not as implementation code.
 - Reuse established patterns.
 - Do not invent missing endpoints, microservices, domain contracts, or infrastructure.
-- When a required architectural decision cannot be inferred safely from the existing project or `.project` knowledge, ask before implementing it.
+- When a required architectural decision cannot be inferred safely from the existing implementation or the root `project/` knowledge, ask before implementing it.

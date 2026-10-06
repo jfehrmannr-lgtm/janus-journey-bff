@@ -10,9 +10,6 @@ export class UsersService {
 
   create(identity: AuthenticatedIdentity, payload: CreateUserDto): Promise<DownstreamResponse> {
     const internalPayload: UserPayload = { ...payload, id: identity.sub }
-  
-    console.debug("identity", identity)
-    console.debug("payload", payload)
 
     return this.client.create(internalPayload, identity)
   }
