@@ -3,6 +3,7 @@ import type { Response } from 'express'
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CurrentIdentity } from '../../auth/decorators/current-identity.decorator.js'
 import type { AuthenticatedIdentity } from '../../auth/types/authenticated-identity.js'
+import { CreateUserDto } from '../dto/create-user.dto.js'
 import { UsersService } from '../services/users.service.js'
 import type { DownstreamResponse, UserPayload } from '../types/ms-users.types.js'
 import { forwardedParamsDescription, userPayloadSchema, userResponseSchema } from '../types/users-openapi.js'
@@ -16,15 +17,18 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({
-    description: 'Creates a User resource by forwarding the opaque request body to ms-users.',
+    description:
+      'Creates a User resource through ms-users using the validated Better Auth subject as its internal identity.',
     summary: 'Create a User resource'
   })
   @ApiBody({
-    description: 'Opaque User payload. User fields are intentionally not defined by the BFF yet.',
+    description:
+      'User provisioning data. The internal User id is derived from the validated JWT and is not accepted from the client.',
     required: true,
-    schema: userPayloadSchema
+    type: CreateUserDto
   })
   @ApiResponse({ description: 'User resource created by ms-users.', schema: userResponseSchema, status: 201 })
+  @ApiResponse({ description: 'The User violates a uniqueness constraint.', status: 409 })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
   @ApiResponse({ description: 'The BFF could not obtain a valid response from ms-users.', status: 502 })
   @ApiResponse({ description: 'The ms-users request timed out.', status: 504 })
@@ -32,7 +36,7 @@ export class UsersController {
   @Post()
   async create(
     @CurrentIdentity() identity: AuthenticatedIdentity,
-    @Body() payload: UserPayload,
+    @Body() payload: CreateUserDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
     return this.writeResponse(response, await this.usersService.create(identity, payload))

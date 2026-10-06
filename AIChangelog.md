@@ -2,6 +2,17 @@
 
 ## 2026-10-05
 
+### #JANUS-BFF-0004: Add Authenticated User Provisioning Boundary
+
+**Work**: Plan / Build; Connected the validated Better Auth identity to the User provisioning and lookup flow while preserving the BFF as the authenticated transport boundary.
+
+- Added typed User provisioning input validation and injected the validated JWT `sub` as the downstream User `id` instead of accepting a client-supplied identity.
+- Added `GET /users/me` to resolve the current User through `ms-users` and preserved downstream status propagation, including `404` for first-time provisioning and `409` for uniqueness conflicts.
+- Added configurable frontend CORS origin handling and synchronized local BFF configuration with the `ms-users` port and frontend origin.
+- Kept JWT validation, session management, and User persistence outside the BFF, delegating domain operations to `ms-users`.
+
+## 2026-10-05
+
 ### #JANUS-BFF-0003: Document BFF Architecture and Usage
 
 **Work**: Build; Replaced the NestJS starter README with repository-specific documentation for the authenticated BFF boundary, User delegation, configuration, development workflow, and source organization.

@@ -39,6 +39,7 @@ const positiveInteger = (config: Record<string, unknown>, key: string, fallback?
 
 export const validateEnvironment = (config: Record<string, unknown>): Record<string, unknown> => ({
   ...config,
+  FRONTEND_ORIGIN: config.FRONTEND_ORIGIN ?? 'http://localhost:3000',
   PORT: positiveInteger(config, 'PORT', 5000),
   BETTER_AUTH_ISSUER: requiredUrl(config, 'BETTER_AUTH_ISSUER'),
   BETTER_AUTH_JWKS_URL: requiredUrl(config, 'BETTER_AUTH_JWKS_URL'),
