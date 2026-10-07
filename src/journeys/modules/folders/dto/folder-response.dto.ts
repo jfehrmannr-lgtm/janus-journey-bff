@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { ProgressResponseDto } from '../../../types/progress-response.dto.js'
+import { ProgressResponseDto } from '@journeys/types/progress-response.dto.js'
 
 export class FolderResponseDto {
   @ApiProperty()

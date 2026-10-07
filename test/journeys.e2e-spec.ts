@@ -41,6 +41,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   beforeEach(async () => {
     verify.mockReset().mockResolvedValue({ sub: 'subject-123' })
     const success = { body: { uid: 'domain-uid-1', type: 'journey' }, headers: {}, status: 200 }
+    const collectionSuccess = { body: { items: [], totalRecords: 0 }, headers: {}, status: 200 }
 
     for (const mock of [
       createJourney,
@@ -64,6 +65,9 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     ]) {
       mock.mockReset().mockResolvedValue(success)
     }
+    findAllJourneys.mockResolvedValue(collectionSuccess)
+    findAllFolders.mockResolvedValue(collectionSuccess)
+    findAllTasks.mockResolvedValue(collectionSuccess)
     createJourney.mockResolvedValue({ ...success, status: 201 })
     createFolder.mockResolvedValue({ ...success, status: 201 })
     createTask.mockResolvedValue({ ...success, status: 201 })
@@ -117,6 +121,18 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     await request(app.getHttpServer()).get('/tasks').expect(401)
   })
 
+  it('requires collection pagination and reports effective page size', async () => {
+    const auth = { Authorization: 'Bearer token' }
+
+    await request(app.getHttpServer()).get('/journeys').set(auth).expect(400)
+    const response = await request(app.getHttpServer()).get('/journeys?page=1&size=201').set(auth).expect(200)
+
+    const body = response.body as { pagination: Record<string, number>; filters: Record<string, never> }
+    expect(body.pagination).toMatchObject({ page: 1, size: 200, length: 0, totalRecords: 0, totalPages: 0 })
+    expect(body.filters).toEqual({})
+    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 200 })
+  })
+
   it('delegates all resource CRUD routes using domain UIDs', async () => {
     const auth = { Authorization: 'Bearer token' }
 
@@ -125,7 +141,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .set(auth)
       .send({ name: 'Journey', parentUid: 'user-1' })
       .expect(201)
-    await request(app.getHttpServer()).get('/journeys').set(auth).expect(200)
+    await request(app.getHttpServer()).get('/journeys?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/journey-1').set(auth).expect(200)
     await request(app.getHttpServer()).put('/journeys/journey-1').set(auth).send({ name: 'Replaced' }).expect(200)
     await request(app.getHttpServer()).patch('/journeys/journey-1').set(auth).send({ name: 'Updated' }).expect(200)
@@ -136,7 +152,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .set(auth)
       .send({ name: 'Folder', parentUid: 'journey-1' })
       .expect(201)
-    await request(app.getHttpServer()).get('/folders').set(auth).expect(200)
+    await request(app.getHttpServer()).get('/folders?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/folders/folder-1').set(auth).expect(200)
     await request(app.getHttpServer()).put('/folders/folder-1').set(auth).send({ name: 'Replaced' }).expect(200)
     await request(app.getHttpServer()).patch('/folders/folder-1').set(auth).send({ name: 'Updated' }).expect(200)
@@ -147,7 +163,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .set(auth)
       .send({ isVisible: true, name: 'Task', parentUid: 'folder-1', state: 'pending' })
       .expect(201)
-    await request(app.getHttpServer()).get('/tasks').set(auth).expect(200)
+    await request(app.getHttpServer()).get('/tasks?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/tasks/task-1').set(auth).expect(200)
     await request(app.getHttpServer()).put('/tasks/task-1').set(auth).send({ state: 'complete' }).expect(200)
     await request(app.getHttpServer()).patch('/tasks/task-1').set(auth).send({ isVisible: false }).expect(200)

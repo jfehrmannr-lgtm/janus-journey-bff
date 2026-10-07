@@ -1,6 +1,6 @@
 import { BadGatewayException, GatewayTimeoutException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { HttpClient, HttpNetworkError, HttpTimeoutError, type HttpResponse } from '@nestjs/http-client'
+import { HttpClient, HttpNetworkError, HttpTimeoutError, type HttpQuery, type HttpResponse } from '@nestjs/http-client'
 import type { CreateFolderDto } from '../modules/folders/dto/create-folder.dto.js'
 import type { UpdateFolderDto } from '../modules/folders/dto/update-folder.dto.js'
 import type { CreateJourneyDto } from '../modules/journeys/dto/create-journey.dto.js'
@@ -8,6 +8,7 @@ import type { UpdateJourneyDto } from '../modules/journeys/dto/update-journey.dt
 import type { CreateTaskDto } from '../modules/tasks/dto/create-task.dto.js'
 import type { UpdateTaskDto } from '../modules/tasks/dto/update-task.dto.js'
 import type { DownstreamResponse } from '../types/ms-journeys.types.js'
+import type { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
 @Injectable()
 export class MsJourneysClient {
@@ -26,8 +27,8 @@ export class MsJourneysClient {
     return this.send('POST', '/journeys', payload)
   }
 
-  findAllJourneys(): Promise<DownstreamResponse> {
-    return this.send('GET', '/journeys')
+  findAllJourneys(query: PaginationQueryDto): Promise<DownstreamResponse> {
+    return this.send('GET', '/journeys', undefined, query)
   }
 
   findJourneyByUid(uid: string): Promise<DownstreamResponse> {
@@ -50,8 +51,8 @@ export class MsJourneysClient {
     return this.send('POST', '/folders', payload)
   }
 
-  findAllFolders(): Promise<DownstreamResponse> {
-    return this.send('GET', '/folders')
+  findAllFolders(query: PaginationQueryDto): Promise<DownstreamResponse> {
+    return this.send('GET', '/folders', undefined, query)
   }
 
   findFolderByUid(uid: string): Promise<DownstreamResponse> {
@@ -74,8 +75,8 @@ export class MsJourneysClient {
     return this.send('POST', '/tasks', payload)
   }
 
-  findAllTasks(): Promise<DownstreamResponse> {
-    return this.send('GET', '/tasks')
+  findAllTasks(query: PaginationQueryDto): Promise<DownstreamResponse> {
+    return this.send('GET', '/tasks', undefined, query)
   }
 
   findTaskByUid(uid: string): Promise<DownstreamResponse> {
@@ -94,10 +95,16 @@ export class MsJourneysClient {
     return this.send('DELETE', this.resourceUrl('/tasks', uid))
   }
 
-  private async send(method: string, path: string, payload?: object): Promise<DownstreamResponse> {
+  private async send(
+    method: string,
+    path: string,
+    payload?: object,
+    query?: PaginationQueryDto
+  ): Promise<DownstreamResponse> {
     try {
       const response = await this.http.request<Response>(this.url(path), {
         method,
+        ...(query === undefined ? {} : { query: query as unknown as HttpQuery }),
         headers: { accept: 'application/json' },
         ...(payload === undefined ? {} : { json: payload }),
         responseType: 'response',

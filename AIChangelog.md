@@ -2,6 +2,26 @@
 
 ## 2026-10-07
 
+### #JANUS-BFF-0007: Document Concrete User Collection Swagger Contract
+
+**Work**: Build; Replaced the opaque User collection Swagger documentation with the concrete public BFF query and response contract.
+
+- Documented required pagination, supported User filters, and approved sorting parameters directly from the validated query DTO.
+- Added concrete User response, User filter, pagination, and collection response DTOs so `GET /users` exposes `User[]`, pagination metadata, and filter schemas without generic arbitrary-property payloads.
+- Added Swagger E2E assertions for required query parameters, enum values, concrete response references, and removal of generic forwarding language.
+
+## 2026-10-07
+
+### #JANUS-BFF-0006: Standardize Bounded Collection Responses
+
+**Work**: Plan / Build; Added mandatory bounded collection pagination and public `CollectionResponse` composition for Users, Journeys, Folders, and Tasks.
+
+- Added shared pagination validation, centralized maximum page size normalization at `200`, strict downstream collection-result parsing, and public pagination metadata construction.
+- Migrated collection routes to return `payload`, `pagination`, and resource-specific filters while preserving direct single-resource and mutation responses.
+- Added downstream query forwarding, effective-size propagation, and tests covering the updated collection behavior without MongoDB `_id` exposure.
+
+## 2026-10-07
+
 ### #JANUS-BFF-0005: Integrate Journey Domain CRUD
 
 **Work**: Plan / Build; Added the authenticated BFF boundary for the existing Journey, Folder, and Task CRUD APIs exposed by `ms-journeys`.

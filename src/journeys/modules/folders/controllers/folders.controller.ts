@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -15,7 +15,8 @@ import { FoldersService } from '../services/folders.service.js'
 import { CreateFolderDto } from '../dto/create-folder.dto.js'
 import { UpdateFolderDto } from '../dto/update-folder.dto.js'
 import { FolderResponseDto } from '../dto/folder-response.dto.js'
-import type { DownstreamResponse } from '../../../types/ms-journeys.types.js'
+import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
+import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Journeys · Folders')
@@ -34,10 +35,20 @@ export class FoldersController {
   }
 
   @ApiOperation({ summary: 'List Folder resources' })
-  @ApiResponse({ isArray: true, status: 200, type: FolderResponseDto })
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'object',
+      properties: {
+        payload: { type: 'array', items: { $ref: '#/components/schemas/FolderResponseDto' } },
+        pagination: { type: 'object' },
+        filters: { type: 'object' }
+      }
+    }
+  })
   @Get()
-  async findAll(@Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.findAll())
+  async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.findAll(query))
   }
 
   @ApiOperation({ summary: 'Get a Folder resource by UID' })

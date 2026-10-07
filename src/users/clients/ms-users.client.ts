@@ -1,13 +1,9 @@
 import { BadGatewayException, GatewayTimeoutException, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { HttpClient, HttpNetworkError, HttpTimeoutError, type HttpQuery, type HttpResponse } from '@nestjs/http-client'
-import type { AuthenticatedIdentity } from '../../auth/types/authenticated-identity.js'
-import type {
-  AuthenticatedMsUsersRequest,
-  DownstreamResponse,
-  MsUsersRequestOptions,
-  UserPayload
-} from '../types/ms-users.types.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
+import type { DownstreamResponse, AuthenticatedMsUsersRequest, UserPayload } from '../types/ms-users.types.js'
+import type { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
 
 export const AUTHENTICATED_SUBJECT_HEADER = 'x-authenticated-subject'
 
@@ -28,11 +24,24 @@ export class MsUsersClient {
     return this.send('POST', '/users', { authenticatedIdentity }, payload)
   }
 
-  findAll(
-    authenticatedIdentity: AuthenticatedIdentity,
-    options: MsUsersRequestOptions = {}
-  ): Promise<DownstreamResponse> {
-    return this.send('GET', '/users', { ...options, authenticatedIdentity })
+  findAll(authenticatedIdentity: AuthenticatedIdentity, query?: FindUsersQueryDto): Promise<DownstreamResponse> {
+    if (query === undefined) {
+      return this.send('GET', '/users', { authenticatedIdentity })
+    }
+
+    return this.send('GET', '/users', {
+      authenticatedIdentity,
+      params: {
+        email: query.email,
+        isVerified: query.isVerified,
+        page: query.page,
+        size: query.size,
+        sortBy: query.sortBy,
+        sortOrder: query.sortOrder,
+        userId: query.userId,
+        username: query.username
+      }
+    })
   }
 
   findById(resourceId: string, authenticatedIdentity: AuthenticatedIdentity): Promise<DownstreamResponse> {

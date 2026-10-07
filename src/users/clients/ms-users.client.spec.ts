@@ -26,7 +26,7 @@ describe('MsUsersClient', () => {
     })
     const client = createClient(request)
 
-    const result = await client.findAll({ sub: 'subject-1' }, { params: { page: 2, status: 'active' } })
+    const result = await client.findAll({ sub: 'subject-1' }, { page: 2, size: 20 } as never)
 
     expect(request).toHaveBeenCalledTimes(1)
 
@@ -41,7 +41,7 @@ describe('MsUsersClient', () => {
 
     expect(url).toBe('http://localhost:4001/users')
     expect(options.headers['x-authenticated-subject']).toBe('subject-1')
-    expect(options.query).toEqual({ page: 2, status: 'active' })
+    expect(options.query).toEqual({ page: 2, size: 20 })
     expect(options.throwOnHttpError).toBe(false)
     expect(result).toMatchObject({ body: { userId: 'user-1' }, status: 200 })
   })

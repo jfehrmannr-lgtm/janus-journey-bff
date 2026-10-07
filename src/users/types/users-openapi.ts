@@ -18,6 +18,3 @@ export const userResponseSchema: SchemaObject = {
     { type: 'boolean' }
   ]
 }
-
-export const forwardedParamsDescription =
-  'Other query parameters are forwarded to ms-users as generic request parameters. The BFF does not define the supported parameter set yet.'

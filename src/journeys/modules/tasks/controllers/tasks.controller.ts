@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -15,7 +15,8 @@ import { TasksService } from '../services/tasks.service.js'
 import { CreateTaskDto } from '../dto/create-task.dto.js'
 import { UpdateTaskDto } from '../dto/update-task.dto.js'
 import { TaskResponseDto } from '../dto/task-response.dto.js'
-import type { DownstreamResponse } from '../../../types/ms-journeys.types.js'
+import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
+import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Journeys · Tasks')
@@ -34,10 +35,20 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'List Task resources' })
-  @ApiResponse({ isArray: true, status: 200, type: TaskResponseDto })
+  @ApiResponse({
+    status: 200,
+    schema: {
+      type: 'object',
+      properties: {
+        payload: { type: 'array', items: { $ref: '#/components/schemas/TaskResponseDto' } },
+        pagination: { type: 'object' },
+        filters: { type: 'object' }
+      }
+    }
+  })
   @Get()
-  async findAll(@Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.findAll())
+  async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.findAll(query))
   }
 
   @ApiOperation({ summary: 'Get a Task resource by UID' })

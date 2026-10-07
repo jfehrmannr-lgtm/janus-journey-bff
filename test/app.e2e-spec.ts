@@ -30,7 +30,10 @@ interface SwaggerOperationShape {
   readonly requestBody?: {
     readonly content?: Record<string, { readonly schema?: Record<string, unknown> }>
   }
-  readonly responses: Record<string, { readonly description?: string }>
+  readonly responses: Record<
+    string,
+    { readonly description?: string; readonly content?: Record<string, { readonly schema?: Record<string, unknown> }> }
+  >
 }
 
 interface SwaggerParameterShape {
@@ -38,7 +41,7 @@ interface SwaggerParameterShape {
   readonly in: string
   readonly required?: boolean
   readonly description?: string
-  readonly schema?: { readonly type?: string }
+  readonly schema?: { readonly type?: string; readonly enum?: readonly string[]; readonly minimum?: number }
 }
 
 describe('Authenticated User flow (e2e)', () => {
@@ -54,7 +57,7 @@ describe('Authenticated User flow (e2e)', () => {
 
     verify.mockResolvedValue({ sub: 'subject-123' })
     findById.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 200 })
-    findAll.mockResolvedValue({ body: [{ userId: 'user-123' }], headers: {}, status: 200 })
+    findAll.mockResolvedValue({ body: { items: [{ userId: 'user-123' }], totalRecords: 1 }, headers: {}, status: 200 })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule]
@@ -87,12 +90,9 @@ describe('Authenticated User flow (e2e)', () => {
   })
 
   it('forwards normal collection query params to ms-users', async () => {
-    await request(app.getHttpServer())
-      .get('/users?status=active&page=2')
-      .set('Authorization', 'Bearer token')
-      .expect(200)
+    await request(app.getHttpServer()).get('/users?page=2&size=20').set('Authorization', 'Bearer token').expect(200)
 
-    expect(findAll).toHaveBeenCalledWith({ sub: 'subject-123' }, { params: { page: '2', status: 'active' } })
+    expect(findAll).toHaveBeenCalledWith({ sub: 'subject-123' }, expect.objectContaining({ page: 2, size: 20 }))
   })
 
   it('preserves downstream status codes', async () => {
@@ -134,7 +134,34 @@ describe('Authenticated User flow (e2e)', () => {
       ])
     )
     expect(getById?.parameters).toHaveLength(1)
-    expect(document.paths['/users']?.get?.parameters).toHaveLength(0)
+    const collection = document.paths['/users']?.get
+    expect(collection?.parameters).toHaveLength(8)
+    expect(collection?.parameters).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ in: 'query', name: 'page', required: true, schema: { minimum: 1, type: 'number' } }),
+        expect.objectContaining({ in: 'query', name: 'size', required: true, schema: { minimum: 1, type: 'number' } }),
+        expect.objectContaining({ in: 'query', name: 'email', required: false }),
+        expect.objectContaining({ in: 'query', name: 'isVerified', required: false }),
+        expect.objectContaining({ in: 'query', name: 'username', required: false }),
+        expect.objectContaining({ in: 'query', name: 'userId', required: false }),
+        expect.objectContaining({
+          in: 'query',
+          name: 'sortBy',
+          required: false,
+          schema: expect.objectContaining({ enum: ['createdAt', 'updatedAt', 'userId', 'email'] })
+        }),
+        expect.objectContaining({
+          in: 'query',
+          name: 'sortOrder',
+          required: false,
+          schema: expect.objectContaining({ enum: ['asc', 'desc'] })
+        })
+      ])
+    )
+    expect(collection?.description).not.toContain('forwarded')
+    expect(collection?.responses['200']?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/UsersCollectionResponseDto'
+    })
     expect(document.paths['/users/{id}']?.patch?.parameters).toHaveLength(1)
     expect(document.paths['/users/{id}']?.delete?.parameters).toHaveLength(1)
     expect(create?.parameters).toHaveLength(0)

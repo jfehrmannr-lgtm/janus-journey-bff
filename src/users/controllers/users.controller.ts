@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger'
-import { CurrentIdentity } from '../../auth/decorators/current-identity.decorator.js'
-import type { AuthenticatedIdentity } from '../../auth/types/authenticated-identity.js'
+import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { CreateUserDto } from '../dto/create-user.dto.js'
+import { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
+import { UsersCollectionResponseDto } from '../dto/users-collection-response.dto.js'
 import { UsersService } from '../services/users.service.js'
 import type { DownstreamResponse, UserPayload } from '../types/ms-users.types.js'
-import { forwardedParamsDescription, userPayloadSchema, userResponseSchema } from '../types/users-openapi.js'
-
-type UserQuery = Record<string, string | string[] | undefined>
+import { userPayloadSchema, userResponseSchema } from '../types/users-openapi.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Users · Users')
@@ -43,12 +43,12 @@ export class UsersController {
   }
 
   @ApiOperation({
-    description: `Lists User resources through ms-users. ${forwardedParamsDescription}`,
+    description: 'Lists User resources using the validated pagination, filter, and sorting parameters.',
     summary: 'List User resources'
   })
   @ApiResponse({
     description: 'User resources returned successfully by ms-users.',
-    schema: userResponseSchema,
+    type: UsersCollectionResponseDto,
     status: 200
   })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
@@ -58,10 +58,10 @@ export class UsersController {
   @Get()
   async findAll(
     @CurrentIdentity() identity: AuthenticatedIdentity,
-    @Query() query: UserQuery,
+    @Query() query: FindUsersQueryDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.usersService.findAll(identity, { params: query }))
+    return this.writeResponse(response, await this.usersService.findAll(identity, query))
   }
 
   @ApiOperation({

@@ -1,11 +1,13 @@
 import { describe, expect, it, jest } from '@jest/globals'
-import { MsJourneysClient } from '../../../clients/ms-journeys.client.js'
+import { MsJourneysClient } from '@journeys/clients/ms-journeys.client.js'
 import { JourneysService } from './journeys.service.js'
 
 describe('JourneysService', () => {
   it('delegates Journey operations to the Journey client methods', async () => {
     const createJourney = jest.fn().mockResolvedValue({})
-    const findAllJourneys = jest.fn().mockResolvedValue({})
+    const findAllJourneys = jest
+      .fn()
+      .mockResolvedValue({ status: 200, headers: {}, body: { items: [], totalRecords: 0 } })
     const findJourneyByUid = jest.fn().mockResolvedValue({})
     const replaceJourney = jest.fn().mockResolvedValue({})
     const updateJourney = jest.fn().mockResolvedValue({})
@@ -21,14 +23,14 @@ describe('JourneysService', () => {
     const service = new JourneysService(client)
 
     await service.create({ name: 'Journey', parentUid: 'user-1' })
-    await service.findAll()
+    await service.findAll({ page: 1, size: 20 })
     await service.findByUid('journey-1')
     await service.replace('journey-1', { name: 'Replaced' })
     await service.update('journey-1', { name: 'Updated' })
     await service.remove('journey-1')
 
     expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parentUid: 'user-1' })
-    expect(findAllJourneys).toHaveBeenCalled()
+    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 20 })
     expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
     expect(replaceJourney).toHaveBeenCalledWith('journey-1', { name: 'Replaced' })
     expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })

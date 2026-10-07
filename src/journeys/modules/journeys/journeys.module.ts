@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { MsJourneysClientModule } from '../../clients/ms-journeys-client.module.js'
+import { MsJourneysClientModule } from '@journeys/clients/ms-journeys-client.module.js'
 import { JourneysController } from './controllers/journeys.controller.js'
 import { JourneysService } from './services/journeys.service.js'
 
