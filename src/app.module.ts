@@ -4,6 +4,7 @@ import { HttpClientModule } from '@nestjs/http-client'
 import { AuthModule } from './auth/auth.module.js'
 import { validateEnvironment } from './config/configuration.js'
 import { UsersModule } from './users/users.module.js'
+import { JourneysModule } from './journeys/journeys.module.js'
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { UsersModule } from './users/users.module.js'
     }),
     HttpClientModule.register({ isGlobal: true }),
     AuthModule,
-    UsersModule
+    UsersModule,
+    JourneysModule
   ]
 })
 export class AppModule {}

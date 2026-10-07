@@ -5,7 +5,7 @@ export const setupSwagger = (app: INestApplication): void => {
   const config = new DocumentBuilder()
     .setTitle('Janus Journey BFF')
     .setDescription(
-      'Authenticated Janus Journey Backend for Frontend API. User operations delegate to ms-users and preserve downstream response status and body when a valid service response is obtained.'
+      'Authenticated Janus Journey Backend for Frontend API. User operations delegate to ms-users and Journey capability operations delegate to ms-journeys while preserving downstream responses.'
     )
     .setVersion('1.0.0')
     .addBearerAuth(

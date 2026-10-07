@@ -4,8 +4,8 @@ The Janus Journey Backend for Frontend (BFF) is the authenticated backend
 boundary consumed by Janus Journey clients.
 
 It accepts client requests, validates Better Auth JWTs, extracts the
-authenticated identity, and delegates User operations to `ms-users`. The BFF
-does not own User persistence or User domain business rules.
+authenticated identity, and delegates domain operations to the appropriate
+microservice. The BFF does not own domain persistence or domain business rules.
 
 ## BFF status
 
@@ -15,6 +15,7 @@ The current BFF includes:
 - JWT signature, expiration, issuer, and audience validation.
 - A reusable authenticated identity guard based on the JWT `sub` claim.
 - User CRUD routes delegated to `ms-users`.
+- Journey, Folder, and Task CRUD routes delegated to `ms-journeys`.
 - Forwarding of User collection query parameters.
 - Downstream status, response body, and selected headers preservation.
 - Swagger/OpenAPI documentation at `/docs` and `/docs-json`.
@@ -24,7 +25,7 @@ The current phase intentionally does **not** include:
 
 - Direct database access.
 - User persistence or User domain logic.
-- Journey, Folder, Task, or Feature Flag operations.
+- Feature Flag operations.
 - Token issuance, refresh, or Better Auth session management.
 
 ## Architecture and responsibility
@@ -37,10 +38,10 @@ NestJS BFF :5000
     │
     ├── Better Auth JWT validation
     ├── Authenticated identity extraction
-    └── REST client boundary
-            │
-            ▼
-      ms-users :4001
+    └── REST client boundaries
+            ├───────────────┬───────────────┐
+            ▼               ▼               ▼
+      ms-users :4001  ms-journeys :4002  (future services)
 ```
 
 The BFF trusts only the validated JWT subject as the authenticated identity. It
@@ -61,6 +62,19 @@ The BFF exposes the following authenticated routes:
 
 The BFF intentionally keeps the request body contract open while `ms-users`
 owns concrete User DTO validation and persistence rules.
+
+### Journey, Folder, and Task routes
+
+The BFF exposes authenticated CRUD routes delegated to `ms-journeys`:
+
+| Method                          | Routes                                           | Responsibility                                  |
+| ------------------------------- | ------------------------------------------------ | ----------------------------------------------- |
+| `GET`, `POST`                   | `/journeys`, `/folders`, `/tasks`                | List or create resources.                       |
+| `GET`, `PUT`, `PATCH`, `DELETE` | `/journeys/:uid`, `/folders/:uid`, `/tasks/:uid` | Retrieve, replace, update, or delete resources. |
+
+Journey, Folder, and Task are separate BFF resources with resource-specific DTOs
+and validation. Domain resources are identified by `uid`; MongoDB `_id` is not
+part of the BFF contract.
 
 ## Technology stack
 
@@ -84,6 +98,7 @@ Before installing the project, make sure the following tools are available:
 - npm.
 - A running Better Auth-compatible issuer exposing a JWKS endpoint.
 - A running `ms-users` service for integrated User requests.
+- A running `ms-journeys` service for integrated Journey, Folder, and Task requests.
 
 ## Installation
 
@@ -113,6 +128,8 @@ BETTER_AUTH_ISSUER=http://localhost:3000
 BETTER_AUTH_JWKS_URL=http://localhost:3000/api/auth/jwks
 MS_USERS_BASE_URL=http://localhost:4001
 MS_USERS_TIMEOUT_MS=5000
+MS_JOURNEYS_BASE_URL=http://localhost:4002
+MS_JOURNEYS_TIMEOUT_MS=5000
 ```
 
 Do not commit `.env` or real credentials.

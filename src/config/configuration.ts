@@ -44,5 +44,7 @@ export const validateEnvironment = (config: Record<string, unknown>): Record<str
   BETTER_AUTH_ISSUER: requiredUrl(config, 'BETTER_AUTH_ISSUER'),
   BETTER_AUTH_JWKS_URL: requiredUrl(config, 'BETTER_AUTH_JWKS_URL'),
   MS_USERS_BASE_URL: requiredUrl(config, 'MS_USERS_BASE_URL'),
-  MS_USERS_TIMEOUT_MS: positiveInteger(config, 'MS_USERS_TIMEOUT_MS', 5000)
+  MS_USERS_TIMEOUT_MS: positiveInteger(config, 'MS_USERS_TIMEOUT_MS', 5000),
+  MS_JOURNEYS_BASE_URL: requiredUrl(config, 'MS_JOURNEYS_BASE_URL'),
+  MS_JOURNEYS_TIMEOUT_MS: positiveInteger(config, 'MS_JOURNEYS_TIMEOUT_MS', 5000)
 })

@@ -1,5 +1,15 @@
 # AI Changelog
 
+## 2026-10-07
+
+### #JANUS-BFF-0005: Integrate Journey Domain CRUD
+
+**Work**: Plan / Build; Added the authenticated BFF boundary for the existing Journey, Folder, and Task CRUD APIs exposed by `ms-journeys`.
+
+- Added separate Journey, Folder, and Task BFF modules with resource-specific controllers, services, DTOs, validation, response contracts, and tests.
+- Added shared configurable `ms-journeys` HTTP infrastructure with downstream response preservation, timeout/network error mapping, and domain `uid` forwarding without MongoDB `_id` or `x-authenticated-subject` coupling.
+- Added Swagger grouping for `MS Users · Users`, `MS Journeys · Journeys`, `MS Journeys · Folders`, and `MS Journeys · Tasks`, plus environment configuration and E2E coverage.
+
 ## 2026-10-05
 
 ### #JANUS-BFF-0004: Add Authenticated User Provisioning Boundary

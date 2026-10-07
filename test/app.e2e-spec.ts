@@ -144,9 +144,8 @@ describe('Authenticated User flow (e2e)', () => {
     expect(getById?.responses['200']?.description).toBe('The requested User resource was returned by ms-users.')
     expect(getById?.responses['404']?.description).toBe('The User resource was not found by ms-users.')
     expect(getById?.responses['502']?.description).toBe('The BFF could not obtain a valid response from ms-users.')
-    expect(create?.requestBody?.content?.['application/json']?.schema).toMatchObject({
-      additionalProperties: true,
-      type: 'object'
+    expect(create?.requestBody?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/CreateUserDto'
     })
     expect(create?.responses['201']?.description).toBe('User resource created by ms-users.')
     expect(create?.responses['200']).toBeUndefined()

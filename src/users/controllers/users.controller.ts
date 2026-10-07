@@ -11,7 +11,7 @@ import { forwardedParamsDescription, userPayloadSchema, userResponseSchema } fro
 type UserQuery = Record<string, string | string[] | undefined>
 
 @ApiBearerAuth('bearer')
-@ApiTags('Users')
+@ApiTags('MS Users · Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
