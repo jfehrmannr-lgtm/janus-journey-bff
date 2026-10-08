@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 class UserConfigResponseDto {
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.png', format: 'uri', nullable: true, type: String })
   avatarUrl!: string | null
 
   @ApiProperty()

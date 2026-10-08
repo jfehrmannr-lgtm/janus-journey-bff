@@ -5,6 +5,7 @@ import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { CreateUserDto } from '../dto/create-user.dto.js'
 import { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
+import { UserResponseDto } from '../dto/user-response.dto.js'
 import { UsersCollectionResponseDto } from '../dto/users-collection-response.dto.js'
 import { UsersService } from '../services/users.service.js'
 import type { DownstreamResponse, UserPayload } from '../types/ms-users.types.js'
@@ -71,7 +72,7 @@ export class UsersController {
   @ApiParam({ description: 'Identifier of the User resource to retrieve.', name: 'id', required: true, type: String })
   @ApiResponse({
     description: 'The requested User resource was returned by ms-users.',
-    schema: userResponseSchema,
+    type: UserResponseDto,
     status: 200
   })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
@@ -98,7 +99,7 @@ export class UsersController {
     required: true,
     schema: userPayloadSchema
   })
-  @ApiResponse({ description: 'The User resource was updated by ms-users.', schema: userResponseSchema, status: 200 })
+  @ApiResponse({ description: 'The User resource was updated by ms-users.', status: 200, type: UserResponseDto })
   @ApiResponse({ description: 'The User resource was updated without a response body.', status: 204 })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
   @ApiResponse({ description: 'The User resource was not found by ms-users.', status: 404 })

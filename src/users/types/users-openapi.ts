@@ -8,7 +8,12 @@ export const userPayloadSchema: SchemaObject = {
     config: {
       additionalProperties: false,
       properties: {
-        avatarUrl: { format: 'uri', nullable: true, type: 'string' },
+        avatarUrl: {
+          example: 'https://example.com/avatar.png',
+          format: 'uri',
+          nullable: true,
+          type: 'string'
+        },
         username: { maxLength: 100, minLength: 1, type: 'string' }
       },
       type: 'object'

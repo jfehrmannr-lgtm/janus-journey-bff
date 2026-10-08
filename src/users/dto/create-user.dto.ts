@@ -15,7 +15,7 @@ import {
 } from 'class-validator'
 
 class CreateUserConfigDto {
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.png', format: 'uri', nullable: true, type: String })
   @ValidateIf((_, value: unknown) => value !== null && value !== undefined)
   @IsUrl({ require_protocol: true })
   avatarUrl?: string | null

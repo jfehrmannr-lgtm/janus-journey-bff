@@ -2,6 +2,27 @@
 
 ## 2026-10-08
 
+### #JANUS-BFF-0012: Correct User Avatar URL Swagger Metadata
+
+**Work**: Plan / Build; Corrected Users-module Swagger metadata so `config.avatarUrl` is documented as a nullable URL string with a valid example instead of an object.
+
+- Updated User creation and response DTO decorators with explicit string type, URI format, and HTTPS example metadata.
+- Updated the PATCH User OpenAPI schema with the same valid URL example and string type.
+- Added E2E assertions covering the generated Swagger schemas without changing validation or runtime behavior.
+
+## 2026-10-08
+
+### #JANUS-BFF-0011: Document User Read and Update Responses
+
+**Work**: Plan / Build; Replaced the generic successful response schemas for `GET /users/{id}` and `PATCH /users/{id}` with the existing verified `UserResponseDto` contract.
+
+- Documented User identity, configuration, verification, metadata, timestamps, and authentication-provider details already returned by the BFF.
+- Reused the existing nested response DTO structure instead of introducing duplicate response models.
+- Preserved existing status codes and runtime behavior; POST and DELETE response documentation remain outside this point’s scope.
+- Added Swagger assertions for the response reference and nested schemas without modifying `ms-users`.
+
+## 2026-10-08
+
 ### #JANUS-BFF-0010: Document Editable User Update Payload
 
 **Work**: Plan / Build; Replaced the opaque PATCH User request-body description with the verified editable configuration contract.

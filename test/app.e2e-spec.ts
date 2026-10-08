@@ -11,8 +11,16 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 interface SwaggerDocumentShape {
   readonly components: {
     readonly securitySchemes: Record<string, Record<string, string>>
+    readonly schemas?: Record<string, { readonly properties?: Record<string, SwaggerSchemaProperty> }>
   }
   readonly paths: Record<string, SwaggerPathShape>
+}
+
+interface SwaggerSchemaProperty {
+  readonly example?: string
+  readonly format?: string
+  readonly nullable?: boolean
+  readonly type?: string
 }
 
 interface SwaggerPathShape {
@@ -199,6 +207,34 @@ describe('Authenticated User flow (e2e)', () => {
     expect(document.paths['/users/{id}']?.get?.requestBody).toBeUndefined()
     expect(document.paths['/users/{id}']?.delete?.requestBody).toBeUndefined()
     expect(getById?.responses['200']?.description).toBe('The requested User resource was returned by ms-users.')
+    expect(getById?.responses['200']?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/UserResponseDto'
+    })
+    expect(document.components.schemas?.UserResponseDto?.properties).toEqual(
+      expect.objectContaining({
+        authLogins: expect.anything(),
+        config: expect.anything(),
+        email: expect.anything(),
+        id: expect.anything(),
+        isVerified: expect.anything(),
+        metadata: expect.anything(),
+        userId: expect.anything()
+      })
+    )
+    expect(document.components.schemas?.UserConfigResponseDto).toBeDefined()
+    expect(document.components.schemas?.AuthLoginResponseDto).toBeDefined()
+    expect(document.components.schemas?.CreateUserConfigDto?.properties?.avatarUrl).toMatchObject({
+      example: 'https://example.com/avatar.png',
+      format: 'uri',
+      nullable: true,
+      type: 'string'
+    })
+    expect(document.components.schemas?.UserConfigResponseDto?.properties?.avatarUrl).toMatchObject({
+      example: 'https://example.com/avatar.png',
+      format: 'uri',
+      nullable: true,
+      type: 'string'
+    })
     expect(getById?.responses['404']?.description).toBe('The User resource was not found by ms-users.')
     expect(getById?.responses['502']?.description).toBe('The BFF could not obtain a valid response from ms-users.')
     expect(create?.requestBody?.content?.['application/json']?.schema).toEqual({
@@ -206,6 +242,9 @@ describe('Authenticated User flow (e2e)', () => {
     })
     expect(create?.responses['201']?.description).toBe('User resource created by ms-users.')
     expect(create?.responses['200']).toBeUndefined()
+    expect(update?.responses['200']?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/UserResponseDto'
+    })
     expect(JSON.stringify(update)).not.toContain('Opaque User payload')
     expect(JSON.stringify(update)).not.toContain('opaque request body')
   })
