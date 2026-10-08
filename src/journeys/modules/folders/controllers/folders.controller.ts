@@ -15,6 +15,7 @@ import { FoldersService } from '../services/folders.service.js'
 import { CreateFolderDto } from '../dto/create-folder.dto.js'
 import { UpdateFolderDto } from '../dto/update-folder.dto.js'
 import { FolderResponseDto } from '../dto/folder-response.dto.js'
+import { FoldersCollectionResponseDto } from '../dto/folders-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
@@ -36,15 +37,9 @@ export class FoldersController {
 
   @ApiOperation({ summary: 'List Folder resources' })
   @ApiResponse({
+    description: 'Folder collection returned successfully.',
     status: 200,
-    schema: {
-      type: 'object',
-      properties: {
-        payload: { type: 'array', items: { $ref: '#/components/schemas/FolderResponseDto' } },
-        pagination: { type: 'object' },
-        filters: { type: 'object' }
-      }
-    }
+    type: FoldersCollectionResponseDto
   })
   @Get()
   async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {

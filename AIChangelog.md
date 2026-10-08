@@ -1,5 +1,28 @@
 # AI Changelog
 
+## 2026-10-08
+
+### #JANUS-BFF-0009: Document Paginated Collection Responses
+
+**Work**: Plan / Build; Replaced incomplete paginated collection Swagger schemas for Journey, Folder, and Task endpoints with DTO-backed public response contracts.
+
+- Documented `payload` arrays using the corresponding resource response DTOs.
+- Documented `pagination` with `page`, `size`, `length`, `totalRecords`, and `totalPages`.
+- Preserved the BFF-specific `{ payload, pagination, filters }` response shape and documented the currently empty filter object.
+- Added OpenAPI assertions for collection response references, item schemas, and pagination metadata.
+- Kept `GET /users` unchanged because its collection response was already documented correctly, and made no changes to `ms-journeys`.
+
+## 2026-10-08
+
+### #JANUS-BFF-0008: Document Task Pagination Parameters
+
+**Work**: Plan / Build; Added explicit Swagger query-parameter documentation for the required `page` and `size` parameters on `GET /tasks` without changing runtime pagination behavior.
+
+- Documented both parameters as required numeric query values with a minimum of `1`; runtime validation continues to require integers.
+- Documented the effective maximum page size of `200` and the existing normalization behavior for larger values.
+- Added an E2E OpenAPI assertion covering parameter names, location, required status, types, and bounds.
+- Kept the corresponding `ms-journeys` implementation unchanged.
+
 ## 2026-10-07
 
 ### #JANUS-BFF-0007: Document Concrete User Collection Swagger Contract

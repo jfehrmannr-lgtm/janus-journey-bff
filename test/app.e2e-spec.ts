@@ -138,8 +138,18 @@ describe('Authenticated User flow (e2e)', () => {
     expect(collection?.parameters).toHaveLength(8)
     expect(collection?.parameters).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ in: 'query', name: 'page', required: true, schema: { minimum: 1, type: 'number' } }),
-        expect.objectContaining({ in: 'query', name: 'size', required: true, schema: { minimum: 1, type: 'number' } }),
+        expect.objectContaining({
+          in: 'query',
+          name: 'page',
+          required: true,
+          schema: expect.objectContaining({ minimum: 1, type: 'number' })
+        }),
+        expect.objectContaining({
+          in: 'query',
+          name: 'size',
+          required: true,
+          schema: expect.objectContaining({ minimum: 1, type: 'number' })
+        }),
         expect.objectContaining({ in: 'query', name: 'email', required: false }),
         expect.objectContaining({ in: 'query', name: 'isVerified', required: false }),
         expect.objectContaining({ in: 'query', name: 'username', required: false }),

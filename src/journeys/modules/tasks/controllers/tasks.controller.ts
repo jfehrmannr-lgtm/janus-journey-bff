@@ -7,6 +7,7 @@ import {
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOperation,
+  ApiQuery,
   ApiParam,
   ApiResponse,
   ApiTags
@@ -15,6 +16,7 @@ import { TasksService } from '../services/tasks.service.js'
 import { CreateTaskDto } from '../dto/create-task.dto.js'
 import { UpdateTaskDto } from '../dto/update-task.dto.js'
 import { TaskResponseDto } from '../dto/task-response.dto.js'
+import { TasksCollectionResponseDto } from '../dto/tasks-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
@@ -35,16 +37,26 @@ export class TasksController {
   }
 
   @ApiOperation({ summary: 'List Task resources' })
+  @ApiQuery({
+    name: 'page',
+    required: true,
+    type: Number,
+    minimum: 1,
+    description: 'Requested collection page.',
+    example: 1
+  })
+  @ApiQuery({
+    name: 'size',
+    required: true,
+    type: Number,
+    minimum: 1,
+    description: 'Requested page size. Values above 200 are normalized to 200.',
+    example: 20
+  })
   @ApiResponse({
+    description: 'Task collection returned successfully.',
     status: 200,
-    schema: {
-      type: 'object',
-      properties: {
-        payload: { type: 'array', items: { $ref: '#/components/schemas/TaskResponseDto' } },
-        pagination: { type: 'object' },
-        filters: { type: 'object' }
-      }
-    }
+    type: TasksCollectionResponseDto
   })
   @Get()
   async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {

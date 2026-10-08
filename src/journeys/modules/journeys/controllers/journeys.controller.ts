@@ -15,6 +15,7 @@ import { JourneysService } from '../services/journeys.service.js'
 import { CreateJourneyDto } from '../dto/create-journey.dto.js'
 import { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import { JourneyResponseDto } from '../dto/journey-response.dto.js'
+import { JourneysCollectionResponseDto } from '../dto/journeys-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
@@ -36,15 +37,9 @@ export class JourneysController {
 
   @ApiOperation({ summary: 'List Journey resources' })
   @ApiResponse({
+    description: 'Journey collection returned successfully.',
     status: 200,
-    schema: {
-      type: 'object',
-      properties: {
-        payload: { type: 'array', items: { $ref: '#/components/schemas/JourneyResponseDto' } },
-        pagination: { type: 'object' },
-        filters: { type: 'object' }
-      }
-    }
+    type: JourneysCollectionResponseDto
   })
   @Get()
   async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {

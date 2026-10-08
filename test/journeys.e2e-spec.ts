@@ -10,10 +10,40 @@ import { MsJourneysClient } from '../src/journeys/clients/ms-journeys.client.js'
 
 interface SwaggerOperation {
   readonly tags?: readonly string[]
+  readonly parameters?: readonly {
+    readonly name?: string
+    readonly in?: string
+    readonly required?: boolean
+    readonly schema?: {
+      readonly type?: string
+      readonly minimum?: number
+      readonly maximum?: number
+    }
+  }[]
+  readonly responses?: Record<
+    string,
+    {
+      readonly content?: Record<string, { readonly schema?: { readonly $ref?: string } }>
+    }
+  >
+}
+
+interface SwaggerSchema {
+  readonly properties?: Record<
+    string,
+    {
+      readonly type?: string
+      readonly $ref?: string
+      readonly minimum?: number
+      readonly maximum?: number
+      readonly items?: { readonly $ref?: string }
+    }
+  >
 }
 
 interface SwaggerDocument {
   readonly paths: Record<string, Record<string, SwaggerOperation>>
+  readonly components?: { readonly schemas?: Record<string, SwaggerSchema> }
 }
 
 describe('Authenticated ms-journeys flow (e2e)', () => {
@@ -194,6 +224,49 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     expect(document.paths['/journeys']?.post?.tags).toEqual(['MS Journeys · Journeys'])
     expect(document.paths['/folders']?.post?.tags).toEqual(['MS Journeys · Folders'])
     expect(document.paths['/tasks']?.post?.tags).toEqual(['MS Journeys · Tasks'])
+    const collectionResponses = [
+      ['journeys', 'JourneysCollectionResponseDto', 'JourneyResponseDto'],
+      ['folders', 'FoldersCollectionResponseDto', 'FolderResponseDto'],
+      ['tasks', 'TasksCollectionResponseDto', 'TaskResponseDto']
+    ] as const
+
+    for (const [resource, responseDto, itemDto] of collectionResponses) {
+      expect(document.paths[`/${resource}`]?.get?.responses?.['200']?.content?.['application/json']?.schema).toEqual({
+        $ref: `#/components/schemas/${responseDto}`
+      })
+
+      const responseProperties = document.components?.schemas?.[responseDto]?.properties
+      expect(responseProperties?.payload).toMatchObject({
+        type: 'array',
+        items: { $ref: `#/components/schemas/${itemDto}` }
+      })
+      expect(responseProperties?.pagination).toEqual({
+        $ref: '#/components/schemas/PaginationResponseDto'
+      })
+      expect(responseProperties?.filters?.type).toBe('object')
+    }
+
+    expect(document.components?.schemas?.PaginationResponseDto?.properties).toEqual({
+      page: expect.objectContaining({ type: 'number', minimum: 1 }),
+      size: expect.objectContaining({ type: 'number', minimum: 1 }),
+      length: expect.objectContaining({ type: 'number', minimum: 0 }),
+      totalRecords: expect.objectContaining({ type: 'number', minimum: 0 }),
+      totalPages: expect.objectContaining({ type: 'number', minimum: 0 })
+    })
+    expect(document.paths['/tasks']?.get?.parameters).toEqual([
+      expect.objectContaining({
+        name: 'page',
+        in: 'query',
+        required: true,
+        schema: expect.objectContaining({ type: 'number', minimum: 1 })
+      }),
+      expect.objectContaining({
+        name: 'size',
+        in: 'query',
+        required: true,
+        schema: expect.objectContaining({ type: 'number', minimum: 1 })
+      })
+    ])
     expect(JSON.stringify(document)).not.toContain('_id')
   })
 
