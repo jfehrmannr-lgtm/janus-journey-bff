@@ -2,6 +2,17 @@
 
 ## 2026-10-08
 
+### #JANUS-BFF-0010: Document Editable User Update Payload
+
+**Work**: Plan / Build; Replaced the opaque PATCH User request-body description with the verified editable configuration contract.
+
+- Documented optional `config.username` and `config.avatarUrl` fields with their existing bounds and URL format.
+- Documented that identity, authentication, persistence, and system-managed User fields are outside the editable request contract.
+- Added Swagger E2E assertions for the update operation and request schema.
+- Preserved runtime forwarding and intentionally left the separate generic User response schema unchanged.
+
+## 2026-10-08
+
 ### #JANUS-BFF-0009: Document Paginated Collection Responses
 
 **Work**: Plan / Build; Replaced incomplete paginated collection Swagger schemas for Journey, Folder, and Task endpoints with DTO-backed public response contracts.

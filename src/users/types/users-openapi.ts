@@ -1,8 +1,19 @@
 import type { SchemaObject } from '@nestjs/swagger'
 
 export const userPayloadSchema: SchemaObject = {
-  additionalProperties: true,
-  description: 'Opaque JSON User payload forwarded to ms-users. The BFF does not define User fields at this stage.',
+  additionalProperties: false,
+  description:
+    'User update data. Only the editable configuration fields username and avatarUrl are supported under config.',
+  properties: {
+    config: {
+      additionalProperties: false,
+      properties: {
+        avatarUrl: { format: 'uri', nullable: true, type: 'string' },
+        username: { maxLength: 100, minLength: 1, type: 'string' }
+      },
+      type: 'object'
+    }
+  },
   type: 'object'
 }
 

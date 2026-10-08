@@ -28,6 +28,7 @@ interface SwaggerOperationShape {
   readonly security?: readonly Record<string, readonly string[]>[]
   readonly parameters?: readonly SwaggerParameterShape[]
   readonly requestBody?: {
+    readonly description?: string
     readonly content?: Record<string, { readonly schema?: Record<string, unknown> }>
   }
   readonly responses: Record<
@@ -174,6 +175,25 @@ describe('Authenticated User flow (e2e)', () => {
     })
     expect(document.paths['/users/{id}']?.patch?.parameters).toHaveLength(1)
     expect(document.paths['/users/{id}']?.delete?.parameters).toHaveLength(1)
+    const update = document.paths['/users/{id}']?.patch
+    expect(update?.description).toBe('Updates the editable configuration fields of a User resource through ms-users.')
+    expect(update?.requestBody?.description).toBe(
+      'User update data. Only config.username and config.avatarUrl are editable.'
+    )
+    expect(update?.requestBody?.content?.['application/json']?.schema).toMatchObject({
+      additionalProperties: false,
+      properties: {
+        config: {
+          additionalProperties: false,
+          properties: {
+            avatarUrl: { format: 'uri', nullable: true, type: 'string' },
+            username: { maxLength: 100, minLength: 1, type: 'string' }
+          },
+          type: 'object'
+        }
+      },
+      type: 'object'
+    })
     expect(create?.parameters).toHaveLength(0)
     expect(document.paths['/users/{id}']?.patch?.requestBody).toBeDefined()
     expect(document.paths['/users/{id}']?.get?.requestBody).toBeUndefined()
@@ -186,6 +206,8 @@ describe('Authenticated User flow (e2e)', () => {
     })
     expect(create?.responses['201']?.description).toBe('User resource created by ms-users.')
     expect(create?.responses['200']).toBeUndefined()
+    expect(JSON.stringify(update)).not.toContain('Opaque User payload')
+    expect(JSON.stringify(update)).not.toContain('opaque request body')
   })
 
   afterEach(async () => {

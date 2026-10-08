@@ -89,12 +89,12 @@ export class UsersController {
   }
 
   @ApiOperation({
-    description: 'Updates a User resource by forwarding the opaque request body to ms-users.',
+    description: 'Updates the editable configuration fields of a User resource through ms-users.',
     summary: 'Update a User resource by ID'
   })
   @ApiParam({ description: 'Identifier of the User resource to update.', name: 'id', required: true, type: String })
   @ApiBody({
-    description: 'Opaque User payload. User fields are intentionally not defined by the BFF yet.',
+    description: 'User update data. Only config.username and config.avatarUrl are editable.',
     required: true,
     schema: userPayloadSchema
   })
