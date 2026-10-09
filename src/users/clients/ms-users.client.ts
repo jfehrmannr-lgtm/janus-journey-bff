@@ -4,6 +4,7 @@ import { HttpClient, HttpNetworkError, HttpTimeoutError, type HttpQuery, type Ht
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import type { DownstreamResponse, AuthenticatedMsUsersRequest, UserPayload } from '../types/ms-users.types.js'
 import type { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
+import type { UpdateUserDto } from '../dto/update-user.dto.js'
 
 export const AUTHENTICATED_SUBJECT_HEADER = 'x-authenticated-subject'
 
@@ -50,7 +51,7 @@ export class MsUsersClient {
 
   update(
     resourceId: string,
-    payload: UserPayload,
+    payload: UpdateUserDto,
     authenticatedIdentity: AuthenticatedIdentity
   ): Promise<DownstreamResponse> {
     return this.send('PATCH', `/users/${encodeURIComponent(resourceId)}`, { authenticatedIdentity }, payload)
@@ -64,7 +65,7 @@ export class MsUsersClient {
     method: string,
     path: string,
     request: AuthenticatedMsUsersRequest,
-    payload?: UserPayload
+    payload?: UserPayload | UpdateUserDto
   ): Promise<DownstreamResponse> {
     try {
       const response = await this.http.request<Response>(this.url(path), {

@@ -3,6 +3,7 @@ import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.j
 import { MsUsersClient } from '../clients/ms-users.client.js'
 import type { CreateUserDto } from '../dto/create-user.dto.js'
 import type { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
+import type { UpdateUserDto } from '../dto/update-user.dto.js'
 import type { DownstreamResponse, UserFilters, UserPayload } from '../types/ms-users.types.js'
 import type { CollectionResponse } from '@common/collections/collection.types.js'
 import { buildCollectionResponse } from '@common/collections/collection.builder.js'
@@ -67,7 +68,7 @@ export class UsersService {
     return this.client.findById(resourceId, identity)
   }
 
-  update(identity: AuthenticatedIdentity, resourceId: string, payload: UserPayload): Promise<DownstreamResponse> {
+  update(identity: AuthenticatedIdentity, resourceId: string, payload: UpdateUserDto): Promise<DownstreamResponse> {
     return this.client.update(resourceId, payload, identity)
   }
 

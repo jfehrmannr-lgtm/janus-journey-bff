@@ -1,7 +1,7 @@
 import { IsBoolean, IsEmail, IsIn, IsOptional, IsString } from 'class-validator'
 import { Transform } from 'class-transformer'
-import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 import { ApiPropertyOptional } from '@nestjs/swagger'
+import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
 export class FindUsersQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({ format: 'email' })

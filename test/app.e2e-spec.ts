@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { INestApplication } from '@nestjs/common'
+import { INestApplication, ValidationPipe } from '@nestjs/common'
 import request from 'supertest'
 import { App } from 'supertest/types.js'
 import { AppModule } from './../src/app.module.js'
@@ -17,6 +17,7 @@ interface SwaggerDocumentShape {
 }
 
 interface SwaggerSchemaProperty {
+  readonly enum?: readonly string[]
   readonly example?: string
   readonly format?: string
   readonly nullable?: boolean
@@ -50,23 +51,33 @@ interface SwaggerParameterShape {
   readonly in: string
   readonly required?: boolean
   readonly description?: string
-  readonly schema?: { readonly type?: string; readonly enum?: readonly string[]; readonly minimum?: number }
+  readonly schema?: {
+    readonly type?: string
+    readonly enum?: readonly string[]
+    readonly minimum?: number
+    readonly maximum?: number
+  }
 }
 
 describe('Authenticated User flow (e2e)', () => {
   let app: INestApplication<App>
   const verify = jest.fn()
+  const createUser = jest.fn()
   const findById = jest.fn()
   const findAll = jest.fn()
+  const updateUser = jest.fn()
 
   beforeEach(async () => {
     verify.mockReset()
+    createUser.mockReset()
     findById.mockReset()
     findAll.mockReset()
+    updateUser.mockReset()
 
     verify.mockResolvedValue({ sub: 'subject-123' })
     findById.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 200 })
     findAll.mockResolvedValue({ body: { items: [{ userId: 'user-123' }], totalRecords: 1 }, headers: {}, status: 200 })
+    createUser.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 201 })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule]
@@ -74,10 +85,17 @@ describe('Authenticated User flow (e2e)', () => {
       .overrideProvider(JwtVerifierService)
       .useValue({ verify })
       .overrideProvider(MsUsersClient)
-      .useValue({ findAll, findById })
+      .useValue({ create: createUser, findAll, findById, update: updateUser })
       .compile()
 
     app = moduleFixture.createNestApplication()
+    app.useGlobalPipes(
+      new ValidationPipe({
+        forbidNonWhitelisted: true,
+        transform: true,
+        whitelist: true
+      })
+    )
     setupSwagger(app)
     await app.init()
   })
@@ -102,6 +120,74 @@ describe('Authenticated User flow (e2e)', () => {
     await request(app.getHttpServer()).get('/users?page=2&size=20').set('Authorization', 'Bearer token').expect(200)
 
     expect(findAll).toHaveBeenCalledWith({ sub: 'subject-123' }, expect.objectContaining({ page: 2, size: 20 }))
+  })
+
+  it('normalizes valid oversized page sizes and rejects invalid values', async () => {
+    for (const pageSize of [1, 50, 200, 201, 2000, 40000]) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=${pageSize}`)
+        .set('Authorization', 'Bearer token')
+        .expect(200)
+    }
+
+    expect(findAll).toHaveBeenLastCalledWith({ sub: 'subject-123' }, expect.objectContaining({ size: 200 }))
+
+    for (const pageSize of ['0', '-20', '1.5', 'abc', 'Infinity']) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=${pageSize}`)
+        .set('Authorization', 'Bearer token')
+        .expect(400)
+    }
+
+    for (const isVerified of ['true', 'false']) {
+      await request(app.getHttpServer())
+        .get(`/users?page=1&size=20&isVerified=${isVerified}`)
+        .set('Authorization', 'Bearer token')
+        .expect(200)
+    }
+
+    await request(app.getHttpServer())
+      .get('/users?page=1&size=20&isVerified=invalid')
+      .set('Authorization', 'Bearer token')
+      .expect(400)
+  })
+
+  it('rejects protected PATCH User fields at the BFF boundary', async () => {
+    await request(app.getHttpServer())
+      .patch('/users/user-123')
+      .set('Authorization', 'Bearer token')
+      .send({ email: 'changed@example.com' })
+      .expect(400)
+  })
+
+  it('accepts all approved authentication providers in User creation', async () => {
+    for (const provider of ['platform', 'google', 'github', 'microsoft']) {
+      await request(app.getHttpServer())
+        .post('/users')
+        .set('Authorization', 'Bearer token')
+        .send({
+          authLogins: [{ authLogin: `oauth-${provider}-1`, provider }],
+          config: { username: `${provider}-user` },
+          email: `${provider}@example.com`
+        })
+        .expect(201)
+    }
+  })
+
+  it('validates and forwards the approved PATCH User fields', async () => {
+    updateUser.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 200 })
+
+    await request(app.getHttpServer())
+      .patch('/users/user-123')
+      .set('Authorization', 'Bearer token')
+      .send({ config: { avatarUrl: null, username: 'updated-user' } })
+      .expect(200)
+
+    expect(updateUser).toHaveBeenCalledWith(
+      'user-123',
+      { config: { avatarUrl: null, username: 'updated-user' } },
+      { sub: 'subject-123' }
+    )
   })
 
   it('preserves downstream status codes', async () => {
@@ -151,13 +237,13 @@ describe('Authenticated User flow (e2e)', () => {
           in: 'query',
           name: 'page',
           required: true,
-          schema: expect.objectContaining({ minimum: 1, type: 'number' })
+          schema: expect.objectContaining({ minimum: 1, type: 'integer' })
         }),
         expect.objectContaining({
           in: 'query',
           name: 'size',
           required: true,
-          schema: expect.objectContaining({ minimum: 1, type: 'number' })
+          schema: expect.objectContaining({ minimum: 1, type: 'integer' })
         }),
         expect.objectContaining({ in: 'query', name: 'email', required: false }),
         expect.objectContaining({ in: 'query', name: 'isVerified', required: false }),
@@ -177,6 +263,8 @@ describe('Authenticated User flow (e2e)', () => {
         })
       ])
     )
+    const pageSizeParameter = collection?.parameters?.find((parameter) => parameter.name === 'size')
+    expect(pageSizeParameter?.schema?.maximum).toBeUndefined()
     expect(collection?.description).not.toContain('forwarded')
     expect(collection?.responses['200']?.content?.['application/json']?.schema).toEqual({
       $ref: '#/components/schemas/UsersCollectionResponseDto'
@@ -223,6 +311,12 @@ describe('Authenticated User flow (e2e)', () => {
     )
     expect(document.components.schemas?.UserConfigResponseDto).toBeDefined()
     expect(document.components.schemas?.AuthLoginResponseDto).toBeDefined()
+    expect(document.components.schemas?.CreateUserAuthLoginDto?.properties?.provider?.enum).toEqual([
+      'platform',
+      'google',
+      'github',
+      'microsoft'
+    ])
     expect(document.components.schemas?.CreateUserConfigDto?.properties?.avatarUrl).toMatchObject({
       example: 'https://example.com/avatar.png',
       format: 'uri',

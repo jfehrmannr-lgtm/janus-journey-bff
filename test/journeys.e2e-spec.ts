@@ -161,6 +161,18 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     expect(body.pagination).toMatchObject({ page: 1, size: 200, length: 0, totalRecords: 0, totalPages: 0 })
     expect(body.filters).toEqual({})
     expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 200 })
+
+    for (const size of [1, 50, 200, 201, 2000, 40000]) {
+      for (const resource of ['journeys', 'folders', 'tasks']) {
+        await request(app.getHttpServer()).get(`/${resource}?page=1&size=${size}`).set(auth).expect(200)
+      }
+    }
+
+    for (const size of ['0', '-20', '1.5', 'abc', 'Infinity']) {
+      for (const resource of ['journeys', 'folders', 'tasks']) {
+        await request(app.getHttpServer()).get(`/${resource}?page=1&size=${size}`).set(auth).expect(400)
+      }
+    }
   })
 
   it('delegates all resource CRUD routes using domain UIDs', async () => {
@@ -258,13 +270,13 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         name: 'page',
         in: 'query',
         required: true,
-        schema: expect.objectContaining({ type: 'number', minimum: 1 })
+        schema: expect.objectContaining({ type: 'integer', minimum: 1 })
       }),
       expect.objectContaining({
         name: 'size',
         in: 'query',
         required: true,
-        schema: expect.objectContaining({ type: 'number', minimum: 1 })
+        schema: expect.objectContaining({ type: 'integer', minimum: 1 })
       })
     ])
     expect(JSON.stringify(document)).not.toContain('_id')

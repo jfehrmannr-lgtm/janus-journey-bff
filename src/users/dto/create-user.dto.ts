@@ -32,9 +32,9 @@ class CreateUserAuthLoginDto {
   @Length(1, 255)
   authLogin!: string
 
-  @ApiProperty({ enum: ['google'] })
-  @IsIn(['google'])
-  provider!: 'google'
+  @ApiProperty({ enum: ['platform', 'google', 'github', 'microsoft'] })
+  @IsIn(['platform', 'google', 'github', 'microsoft'])
+  provider!: 'platform' | 'google' | 'github' | 'microsoft'
 
   @ApiPropertyOptional({ nullable: true })
   @ValidateIf((_, value: unknown) => value !== null && value !== undefined)

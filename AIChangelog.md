@@ -1,5 +1,26 @@
 # AI Changelog
 
+## 2026-10-09
+
+### #JANUS-BFF-0014: Restore Shared Pagination Parameters
+
+**Work**: Plan / Build; Corrected the pagination alignment by reusing the existing shared `PaginationQueryDto` and restoring the established `page` and `size` parameters across BFF collection endpoints.
+
+- Removed the User-specific pagination field and retained shared positive-integer validation.
+- Preserved effective size normalization to 200 for Users, Journeys, Folders, and Tasks.
+- Updated forwarding, Swagger assertions, and endpoint coverage without changing pagination defaults.
+
+## 2026-10-09
+
+### #JANUS-BFF-0013: Align User Validation Contracts
+
+**Work**: Plan / Build; Aligned the BFF User boundary with the approved validation contract while preserving JWT-derived identity and independent `ms-users` validation.
+
+- Added a typed nested `UpdateUserDto` validating editable `config.username` and nullable URL `config.avatarUrl` fields.
+- Expanded User creation provider validation to `platform`, `google`, `github`, and `microsoft`.
+- Added the User-specific `pageSize` query contract with positive-integer validation, effective normalization to 200, and no input maximum in Swagger.
+- Preserved strict `true`/`false` handling for `isVerified` and added boundary and OpenAPI tests.
+
 ## 2026-10-08
 
 ### #JANUS-BFF-0012: Correct User Avatar URL Swagger Metadata

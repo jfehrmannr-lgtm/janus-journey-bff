@@ -6,9 +6,10 @@ import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.j
 import { CreateUserDto } from '../dto/create-user.dto.js'
 import { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
 import { UserResponseDto } from '../dto/user-response.dto.js'
+import { UpdateUserDto } from '../dto/update-user.dto.js'
 import { UsersCollectionResponseDto } from '../dto/users-collection-response.dto.js'
 import { UsersService } from '../services/users.service.js'
-import type { DownstreamResponse, UserPayload } from '../types/ms-users.types.js'
+import type { DownstreamResponse } from '../types/ms-users.types.js'
 import { userPayloadSchema, userResponseSchema } from '../types/users-openapi.js'
 
 @ApiBearerAuth('bearer')
@@ -110,7 +111,7 @@ export class UsersController {
   async update(
     @CurrentIdentity() identity: AuthenticatedIdentity,
     @Param('id') resourceId: string,
-    @Body() payload: UserPayload,
+    @Body() payload: UpdateUserDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
     return this.writeResponse(response, await this.usersService.update(identity, resourceId, payload))

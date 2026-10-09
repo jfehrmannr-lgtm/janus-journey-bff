@@ -40,7 +40,7 @@ export class TasksController {
   @ApiQuery({
     name: 'page',
     required: true,
-    type: Number,
+    type: 'integer',
     minimum: 1,
     description: 'Requested collection page.',
     example: 1
@@ -48,7 +48,7 @@ export class TasksController {
   @ApiQuery({
     name: 'size',
     required: true,
-    type: Number,
+    type: 'integer',
     minimum: 1,
     description: 'Requested page size. Values above 200 are normalized to 200.',
     example: 20
