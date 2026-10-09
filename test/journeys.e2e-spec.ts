@@ -52,19 +52,16 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   const createJourney = jest.fn()
   const findAllJourneys = jest.fn()
   const findJourneyByUid = jest.fn()
-  const replaceJourney = jest.fn()
   const updateJourney = jest.fn()
   const removeJourney = jest.fn()
   const createFolder = jest.fn()
   const findAllFolders = jest.fn()
   const findFolderByUid = jest.fn()
-  const replaceFolder = jest.fn()
   const updateFolder = jest.fn()
   const removeFolder = jest.fn()
   const createTask = jest.fn()
   const findAllTasks = jest.fn()
   const findTaskByUid = jest.fn()
-  const replaceTask = jest.fn()
   const updateTask = jest.fn()
   const removeTask = jest.fn()
 
@@ -77,19 +74,16 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       createJourney,
       findAllJourneys,
       findJourneyByUid,
-      replaceJourney,
       updateJourney,
       removeJourney,
       createFolder,
       findAllFolders,
       findFolderByUid,
-      replaceFolder,
       updateFolder,
       removeFolder,
       createTask,
       findAllTasks,
       findTaskByUid,
-      replaceTask,
       updateTask,
       removeTask
     ]) {
@@ -124,9 +118,6 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         removeFolder,
         removeJourney,
         removeTask,
-        replaceFolder,
-        replaceJourney,
-        replaceTask,
         updateFolder,
         updateJourney,
         updateTask
@@ -185,7 +176,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .expect(201)
     await request(app.getHttpServer()).get('/journeys?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/journey-1').set(auth).expect(200)
-    await request(app.getHttpServer()).put('/journeys/journey-1').set(auth).send({ name: 'Replaced' }).expect(200)
+    await request(app.getHttpServer()).put('/journeys/journey-1').set(auth).send({ name: 'Replaced' }).expect(404)
     await request(app.getHttpServer()).patch('/journeys/journey-1').set(auth).send({ name: 'Updated' }).expect(200)
     await request(app.getHttpServer()).delete('/journeys/journey-1').set(auth).expect(204)
 
@@ -196,7 +187,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .expect(201)
     await request(app.getHttpServer()).get('/folders?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/folders/folder-1').set(auth).expect(200)
-    await request(app.getHttpServer()).put('/folders/folder-1').set(auth).send({ name: 'Replaced' }).expect(200)
+    await request(app.getHttpServer()).put('/folders/folder-1').set(auth).send({ name: 'Replaced' }).expect(404)
     await request(app.getHttpServer()).patch('/folders/folder-1').set(auth).send({ name: 'Updated' }).expect(200)
     await request(app.getHttpServer()).delete('/folders/folder-1').set(auth).expect(204)
 
@@ -207,13 +198,12 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .expect(201)
     await request(app.getHttpServer()).get('/tasks?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/tasks/task-1').set(auth).expect(200)
-    await request(app.getHttpServer()).put('/tasks/task-1').set(auth).send({ state: 'complete' }).expect(200)
+    await request(app.getHttpServer()).put('/tasks/task-1').set(auth).send({ state: 'complete' }).expect(404)
     await request(app.getHttpServer()).patch('/tasks/task-1').set(auth).send({ isVisible: false }).expect(200)
     await request(app.getHttpServer()).delete('/tasks/task-1').set(auth).expect(204)
 
     expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parentUid: 'user-1' })
     expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
-    expect(replaceJourney).toHaveBeenCalledWith('journey-1', { name: 'Replaced' })
     expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })
     expect(removeJourney).toHaveBeenCalledWith('journey-1')
     expect(createFolder).toHaveBeenCalledWith({ name: 'Folder', parentUid: 'journey-1' })
@@ -256,6 +246,8 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         $ref: '#/components/schemas/PaginationResponseDto'
       })
       expect(responseProperties?.filters?.type).toBe('object')
+      expect(document.paths[`/${resource}/{uid}`]?.put).toBeUndefined()
+      expect(document.paths[`/${resource}/{uid}`]?.patch).toBeDefined()
     }
 
     expect(document.components?.schemas?.PaginationResponseDto?.properties).toEqual({

@@ -31,7 +31,7 @@ describe('MsJourneysClient', () => {
     await client.createJourney({ name: 'Journey', parentUid: 'user-1' })
     await client.findAllFolders()
     await client.findTaskByUid('task/1')
-    await client.replaceJourney('journey-1', { name: 'Updated' })
+    await client.updateJourney('journey-1', { name: 'Updated' })
     await client.updateFolder('folder-1', { metadata: { source: 'test' } })
     await client.removeTask('task-1')
 
@@ -44,7 +44,7 @@ describe('MsJourneysClient', () => {
       { method: 'POST', url: 'http://localhost:4002/journeys' },
       { method: 'GET', url: 'http://localhost:4002/folders' },
       { method: 'GET', url: 'http://localhost:4002/tasks/task%2F1' },
-      { method: 'PUT', url: 'http://localhost:4002/journeys/journey-1' },
+      { method: 'PATCH', url: 'http://localhost:4002/journeys/journey-1' },
       { method: 'PATCH', url: 'http://localhost:4002/folders/folder-1' },
       { method: 'DELETE', url: 'http://localhost:4002/tasks/task-1' }
     ])

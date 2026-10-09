@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -53,20 +53,6 @@ export class FoldersController {
   @Get(':uid')
   async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
     return this.writeResponse(response, await this.foldersService.findByUid(uid))
-  }
-
-  @ApiOperation({ summary: 'Replace a Folder resource by UID' })
-  @ApiParam({ description: 'Domain UID of the Folder resource.', name: 'uid', type: String })
-  @ApiBody({ type: UpdateFolderDto })
-  @ApiResponse({ status: 200, type: FolderResponseDto })
-  @ApiNotFoundResponse({ description: 'The Folder resource was not found.' })
-  @Put(':uid')
-  async replace(
-    @Param('uid') uid: string,
-    @Body() payload: UpdateFolderDto,
-    @Res({ passthrough: true }) response: Response
-  ): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.replace(uid, payload))
   }
 
   @ApiOperation({ summary: 'Partially update a Folder resource by UID' })

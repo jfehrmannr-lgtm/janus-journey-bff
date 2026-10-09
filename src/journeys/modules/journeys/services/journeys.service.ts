@@ -33,10 +33,6 @@ export class JourneysService {
     return this.client.findJourneyByUid(uid)
   }
 
-  replace(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
-    return this.client.replaceJourney(uid, payload)
-  }
-
   update(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
     return this.client.updateJourney(uid, payload)
   }

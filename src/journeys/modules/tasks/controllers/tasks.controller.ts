@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -70,20 +70,6 @@ export class TasksController {
   @Get(':uid')
   async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
     return this.writeResponse(response, await this.tasksService.findByUid(uid))
-  }
-
-  @ApiOperation({ summary: 'Replace a Task resource by UID' })
-  @ApiParam({ description: 'Domain UID of the Task resource.', name: 'uid', type: String })
-  @ApiBody({ type: UpdateTaskDto })
-  @ApiResponse({ status: 200, type: TaskResponseDto })
-  @ApiNotFoundResponse({ description: 'The Task resource was not found.' })
-  @Put(':uid')
-  async replace(
-    @Param('uid') uid: string,
-    @Body() payload: UpdateTaskDto,
-    @Res({ passthrough: true }) response: Response
-  ): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.replace(uid, payload))
   }
 
   @ApiOperation({ summary: 'Partially update a Task resource by UID' })

@@ -33,10 +33,6 @@ export class FoldersService {
     return this.client.findFolderByUid(uid)
   }
 
-  replace(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
-    return this.client.replaceFolder(uid, payload)
-  }
-
   update(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
     return this.client.updateFolder(uid, payload)
   }

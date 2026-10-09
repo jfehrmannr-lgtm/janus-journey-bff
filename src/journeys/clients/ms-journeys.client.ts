@@ -35,10 +35,6 @@ export class MsJourneysClient {
     return this.send('GET', this.resourceUrl('/journeys', uid))
   }
 
-  replaceJourney(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
-    return this.send('PUT', this.resourceUrl('/journeys', uid), payload)
-  }
-
   updateJourney(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
     return this.send('PATCH', this.resourceUrl('/journeys', uid), payload)
   }
@@ -59,10 +55,6 @@ export class MsJourneysClient {
     return this.send('GET', this.resourceUrl('/folders', uid))
   }
 
-  replaceFolder(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
-    return this.send('PUT', this.resourceUrl('/folders', uid), payload)
-  }
-
   updateFolder(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
     return this.send('PATCH', this.resourceUrl('/folders', uid), payload)
   }
@@ -81,10 +73,6 @@ export class MsJourneysClient {
 
   findTaskByUid(uid: string): Promise<DownstreamResponse> {
     return this.send('GET', this.resourceUrl('/tasks', uid))
-  }
-
-  replaceTask(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {
-    return this.send('PUT', this.resourceUrl('/tasks', uid), payload)
   }
 
   updateTask(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {

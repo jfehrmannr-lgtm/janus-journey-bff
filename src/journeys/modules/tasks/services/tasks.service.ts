@@ -33,10 +33,6 @@ export class TasksService {
     return this.client.findTaskByUid(uid)
   }
 
-  replace(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {
-    return this.client.replaceTask(uid, payload)
-  }
-
   update(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {
     return this.client.updateTask(uid, payload)
   }

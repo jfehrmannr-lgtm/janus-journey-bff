@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Put, Query, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -53,20 +53,6 @@ export class JourneysController {
   @Get(':uid')
   async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
     return this.writeResponse(response, await this.journeysService.findByUid(uid))
-  }
-
-  @ApiOperation({ summary: 'Replace a Journey resource by UID' })
-  @ApiParam({ description: 'Domain UID of the Journey resource.', name: 'uid', type: String })
-  @ApiBody({ type: UpdateJourneyDto })
-  @ApiResponse({ status: 200, type: JourneyResponseDto })
-  @ApiNotFoundResponse({ description: 'The Journey resource was not found.' })
-  @Put(':uid')
-  async replace(
-    @Param('uid') uid: string,
-    @Body() payload: UpdateJourneyDto,
-    @Res({ passthrough: true }) response: Response
-  ): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.replace(uid, payload))
   }
 
   @ApiOperation({ summary: 'Partially update a Journey resource by UID' })
