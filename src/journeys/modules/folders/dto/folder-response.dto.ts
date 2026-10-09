@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { ProgressResponseDto } from '@journeys/types/progress-response.dto.js'
+import { ParentReferenceDto } from '@common/parent-reference.dto.js'
 
 export class FolderResponseDto {
   @ApiProperty()
@@ -8,16 +9,16 @@ export class FolderResponseDto {
   @ApiProperty({ enum: ['folder'] })
   type!: 'folder'
 
-  @ApiProperty()
-  parentUid!: string
+  @ApiProperty({ type: ParentReferenceDto })
+  parent!: ParentReferenceDto
 
   @ApiProperty()
   name!: string
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ example: 'Description for folder', nullable: true, type: String })
   description!: string | null
 
-  @ApiPropertyOptional({ type: Object })
+  @ApiPropertyOptional({ example: 100, type: Number })
   orderIndex?: unknown
 
   @ApiProperty({ type: Object })

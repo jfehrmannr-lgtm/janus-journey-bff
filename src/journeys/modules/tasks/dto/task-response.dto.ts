@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { TASK_STATES, type TaskState } from './create-task.dto.js'
+import { ParentReferenceDto } from '@common/parent-reference.dto.js'
 
 export class TaskResponseDto {
   @ApiProperty()
@@ -8,13 +9,13 @@ export class TaskResponseDto {
   @ApiProperty({ enum: ['task'] })
   type!: 'task'
 
-  @ApiProperty()
-  parentUid!: string
+  @ApiProperty({ type: ParentReferenceDto })
+  parent!: ParentReferenceDto
 
   @ApiProperty()
   name!: string
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ example: 'Description for task', nullable: true, type: String })
   description!: string | null
 
   @ApiProperty({ nullable: true, type: String })
@@ -26,7 +27,7 @@ export class TaskResponseDto {
   @ApiProperty()
   isVisible!: boolean
 
-  @ApiPropertyOptional({ type: Object })
+  @ApiPropertyOptional({ example: 100, type: Number })
   orderIndex?: unknown
 
   @ApiProperty({ type: Object })

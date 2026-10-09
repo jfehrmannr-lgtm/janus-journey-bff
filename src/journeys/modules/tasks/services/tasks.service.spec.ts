@@ -18,13 +18,23 @@ describe('TasksService', () => {
     } as unknown as MsJourneysClient
     const service = new TasksService(client)
 
-    await service.create({ isVisible: true, name: 'Task', parentUid: 'folder-1', state: 'pending' })
+    await service.create({
+      isVisible: true,
+      name: 'Task',
+      parent: { type: 'folder', uid: 'folder-1' },
+      state: 'pending'
+    })
     await service.findAll({ page: 1, size: 20 })
     await service.findByUid('task-1')
     await service.update('task-1', { isVisible: false })
     await service.remove('task-1')
 
-    expect(createTask).toHaveBeenCalledWith({ isVisible: true, name: 'Task', parentUid: 'folder-1', state: 'pending' })
+    expect(createTask).toHaveBeenCalledWith({
+      isVisible: true,
+      name: 'Task',
+      parent: { type: 'folder', uid: 'folder-1' },
+      state: 'pending'
+    })
     expect(findAllTasks).toHaveBeenCalledWith({ page: 1, size: 20 })
     expect(findTaskByUid).toHaveBeenCalledWith('task-1')
     expect(updateTask).toHaveBeenCalledWith('task-1', { isVisible: false })

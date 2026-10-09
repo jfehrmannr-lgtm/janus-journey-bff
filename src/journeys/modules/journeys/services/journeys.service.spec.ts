@@ -20,13 +20,13 @@ describe('JourneysService', () => {
     } as unknown as MsJourneysClient
     const service = new JourneysService(client)
 
-    await service.create({ name: 'Journey', parentUid: 'user-1' })
+    await service.create({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
     await service.findAll({ page: 1, size: 20 })
     await service.findByUid('journey-1')
     await service.update('journey-1', { name: 'Updated' })
     await service.remove('journey-1')
 
-    expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parentUid: 'user-1' })
+    expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
     expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 20 })
     expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
     expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })

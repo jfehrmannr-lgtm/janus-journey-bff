@@ -28,7 +28,7 @@ describe('MsJourneysClient', () => {
     const request = jest.fn().mockImplementation(() => Promise.resolve(response()))
     const client = createClient(request)
 
-    await client.createJourney({ name: 'Journey', parentUid: 'user-1' })
+    await client.createJourney({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
     await client.findAllFolders()
     await client.findTaskByUid('task/1')
     await client.updateJourney('journey-1', { name: 'Updated' })

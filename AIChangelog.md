@@ -1,3 +1,13 @@
+## 2026-10-09
+
+### #JANUS-BFF-0017: Align Journey Swagger Resource Schemas
+
+**Work**: Plan / Build; Aligned BFF Journey, Folder, and Task request and response DTOs with the approved nested parent contract used by `ms-journeys`.
+
+- Replaced `parentUid` with validated `parent.uid` and `parent.type` structures.
+- Corrected description examples, nullable string metadata, and numeric `orderIndex` examples for request and response schemas.
+- Added OpenAPI coverage for POST, GET, GET-by-UID, and PATCH operations across all three resources without changing domain business logic.
+
 # Point 15 - Update Swagger Request and Response Schemas
 
 ## Context

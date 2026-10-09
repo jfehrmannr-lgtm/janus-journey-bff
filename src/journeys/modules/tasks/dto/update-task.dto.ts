@@ -1,13 +1,15 @@
 import { ApiPropertyOptional } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Length } from 'class-validator'
+import { Type } from 'class-transformer'
+import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Length, ValidateNested } from 'class-validator'
 import { TASK_STATES, type TaskState } from './create-task.dto.js'
+import { ParentReferenceDto } from '@common/parent-reference.dto.js'
 
 export class UpdateTaskDto {
-  @ApiPropertyOptional({ description: 'UID of the owning User, Journey, or Folder.' })
+  @ApiPropertyOptional({ type: ParentReferenceDto })
   @IsOptional()
-  @IsString()
-  @Length(1, 255)
-  parentUid?: string
+  @ValidateNested()
+  @Type(() => ParentReferenceDto)
+  parent?: ParentReferenceDto
 
   @ApiPropertyOptional({ example: 'Updated task name' })
   @IsOptional()
@@ -15,7 +17,7 @@ export class UpdateTaskDto {
   @Length(1, 255)
   name?: string
 
-  @ApiPropertyOptional({ nullable: true })
+  @ApiPropertyOptional({ example: 'Description for task', nullable: true })
   @IsOptional()
   @IsString()
   description?: string | null
@@ -30,7 +32,7 @@ export class UpdateTaskDto {
   @IsBoolean()
   isVisible?: boolean
 
-  @ApiPropertyOptional({ type: Object })
+  @ApiPropertyOptional({ example: 100, type: Number })
   @IsOptional()
   orderIndex?: unknown
 
