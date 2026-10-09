@@ -123,11 +123,6 @@ export class UsersController {
   })
   @ApiParam({ description: 'Identifier of the User resource to delete.', name: 'id', required: true, type: String })
   @ApiResponse({ description: 'The User resource was deleted by ms-users.', status: 204 })
-  @ApiResponse({
-    description: 'ms-users returned a successful deletion response with a body.',
-    schema: userResponseSchema,
-    status: 200
-  })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
   @ApiResponse({ description: 'The User resource was not found by ms-users.', status: 404 })
   @ApiResponse({ description: 'The BFF could not obtain a valid response from ms-users.', status: 502 })

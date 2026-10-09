@@ -66,6 +66,7 @@ describe('Authenticated User flow (e2e)', () => {
   const findById = jest.fn()
   const findAll = jest.fn()
   const updateUser = jest.fn()
+  const removeUser = jest.fn()
 
   beforeEach(async () => {
     verify.mockReset()
@@ -73,11 +74,13 @@ describe('Authenticated User flow (e2e)', () => {
     findById.mockReset()
     findAll.mockReset()
     updateUser.mockReset()
+    removeUser.mockReset()
 
     verify.mockResolvedValue({ sub: 'subject-123' })
     findById.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 200 })
     findAll.mockResolvedValue({ body: { items: [{ userId: 'user-123' }], totalRecords: 1 }, headers: {}, status: 200 })
     createUser.mockResolvedValue({ body: { userId: 'user-123' }, headers: {}, status: 201 })
+    removeUser.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule]
@@ -85,7 +88,7 @@ describe('Authenticated User flow (e2e)', () => {
       .overrideProvider(JwtVerifierService)
       .useValue({ verify })
       .overrideProvider(MsUsersClient)
-      .useValue({ create: createUser, findAll, findById, update: updateUser })
+      .useValue({ create: createUser, findAll, findById, remove: removeUser, update: updateUser })
       .compile()
 
     app = moduleFixture.createNestApplication()
@@ -114,6 +117,18 @@ describe('Authenticated User flow (e2e)', () => {
 
     expect(verify).toHaveBeenCalledWith('token')
     expect(findById).toHaveBeenCalledWith('user-123', { sub: 'subject-123' })
+  })
+
+  it('forwards User deletion as 204 No Content without a response body', async () => {
+    await request(app.getHttpServer())
+      .delete('/users/user-123')
+      .set('Authorization', 'Bearer token')
+      .expect(204)
+      .expect((response) => {
+        expect(response.text).toBe('')
+      })
+
+    expect(removeUser).toHaveBeenCalledWith('user-123', { sub: 'subject-123' })
   })
 
   it('forwards normal collection query params to ms-users', async () => {
@@ -294,6 +309,8 @@ describe('Authenticated User flow (e2e)', () => {
     expect(document.paths['/users/{id}']?.patch?.requestBody).toBeDefined()
     expect(document.paths['/users/{id}']?.get?.requestBody).toBeUndefined()
     expect(document.paths['/users/{id}']?.delete?.requestBody).toBeUndefined()
+    expect(document.paths['/users/{id}']?.delete?.responses['204']).toBeDefined()
+    expect(document.paths['/users/{id}']?.delete?.responses['200']).toBeUndefined()
     expect(getById?.responses['200']?.description).toBe('The requested User resource was returned by ms-users.')
     expect(getById?.responses['200']?.content?.['application/json']?.schema).toEqual({
       $ref: '#/components/schemas/UserResponseDto'

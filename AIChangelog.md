@@ -2,6 +2,16 @@
 
 ## 2026-10-09
 
+### #JANUS-BFF-0015: Correct User Deletion Response Documentation
+
+**Work**: Plan / Build; Verified the User deletion response through the BFF and `ms-users`, then aligned the BFF Swagger contract with the observed `204 No Content` behavior.
+
+- Removed the misleading successful `200` response documenting a User body for `DELETE /users/{id}`.
+- Preserved downstream status and body forwarding without changing deletion runtime behavior.
+- Added coverage confirming the BFF returns `204` with no response body and forwards the authenticated identity.
+
+## 2026-10-09
+
 ### #JANUS-BFF-0014: Restore Shared Pagination Parameters
 
 **Work**: Plan / Build; Corrected the pagination alignment by reusing the existing shared `PaginationQueryDto` and restoring the established `page` and `size` parameters across BFF collection endpoints.
