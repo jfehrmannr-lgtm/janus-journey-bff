@@ -8,6 +8,7 @@ import type { UpdateJourneyDto } from '../modules/journeys/dto/update-journey.dt
 import type { CreateTaskDto } from '../modules/tasks/dto/create-task.dto.js'
 import type { UpdateTaskDto } from '../modules/tasks/dto/update-task.dto.js'
 import type { DownstreamResponse } from '../types/ms-journeys.types.js'
+import type { ResourceType } from '../modules/user-root/dto/resource-params.dto.js'
 import type { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
 @Injectable()
@@ -37,6 +38,10 @@ export class MsJourneysClient {
 
   findUserRoot(userId: string): Promise<DownstreamResponse> {
     return this.send('GET', `/users/${encodeURIComponent(userId)}/root`)
+  }
+
+  findResource(resourceType: ResourceType, resourceId: string): Promise<DownstreamResponse> {
+    return this.send('GET', `/users/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}`)
   }
 
   updateJourney(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {

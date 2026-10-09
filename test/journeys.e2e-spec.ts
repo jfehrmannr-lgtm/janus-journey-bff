@@ -46,6 +46,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   const createJourney = jest.fn()
   const findAllJourneys = jest.fn()
   const findJourneyByUid = jest.fn()
+  const findResource = jest.fn()
   const findUserRoot = jest.fn()
   const updateJourney = jest.fn()
   const removeJourney = jest.fn()
@@ -78,6 +79,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       createJourney,
       findAllJourneys,
       findJourneyByUid,
+      findResource,
       findUserRoot,
       updateJourney,
       removeJourney,
@@ -105,6 +107,18 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       headers: {},
       status: 200
     })
+    findResource.mockResolvedValue({
+      body: {
+        items: {
+          folders: [{ tasks: [], uid: 'folder-1', type: 'folder' }],
+          tasks: [{ uid: 'task-1', type: 'task' }],
+          uid: 'journey-1',
+          type: 'journey'
+        }
+      },
+      headers: {},
+      status: 200
+    })
     createJourney.mockResolvedValue({ ...success, status: 201 })
     createFolder.mockResolvedValue({ ...success, status: 201 })
     createTask.mockResolvedValue({ ...success, status: 201 })
@@ -127,6 +141,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         findAllTasks,
         findFolderByUid,
         findJourneyByUid,
+        findResource,
         findUserRoot,
         findTaskByUid,
         removeFolder,
@@ -155,6 +170,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     await request(app.getHttpServer()).get('/journeys/folders').expect(401)
     await request(app.getHttpServer()).get('/journeys/tasks').expect(401)
     await request(app.getHttpServer()).get('/journeys/root').expect(401)
+    await request(app.getHttpServer()).get('/journeys/resources/journey/journey-1').expect(401)
   })
 
   it('returns authenticated User root resources without pagination or filters', async () => {
@@ -199,6 +215,37 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .set('Authorization', 'Bearer token')
       .expect(502)
       .expect({ message: 'ms-journeys unavailable' })
+  })
+
+  it('returns complete resources through the payload convention', async () => {
+    await request(app.getHttpServer())
+      .get('/journeys/resources/journey/journey-1')
+      .set('Authorization', 'Bearer token')
+      .expect(200)
+      .expect({
+        payload: {
+          folders: [{ tasks: [], uid: 'folder-1', type: 'folder' }],
+          tasks: [{ uid: 'task-1', type: 'task' }],
+          uid: 'journey-1',
+          type: 'journey'
+        }
+      })
+
+    expect(findResource).toHaveBeenCalledWith('journey', 'journey-1')
+  })
+
+  it('preserves upstream resource errors', async () => {
+    findResource.mockResolvedValueOnce({
+      body: { message: 'resource unavailable' },
+      headers: {},
+      status: 502
+    })
+
+    await request(app.getHttpServer())
+      .get('/journeys/resources/task/task-1')
+      .set('Authorization', 'Bearer token')
+      .expect(502)
+      .expect({ message: 'resource unavailable' })
   })
 
   it('requires collection pagination and reports effective page size', async () => {
@@ -311,6 +358,14 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       $ref: '#/components/schemas/UserRootResponseDto'
     })
     expect(document.paths['/journeys/root']?.get?.parameters ?? []).toEqual([])
+    expect(document.paths['/journeys/resources/{resourceType}/{resourceId}']?.get?.tags).toContain(
+      'MS Journeys · User Root Resources'
+    )
+    expect(
+      document.paths['/journeys/resources/{resourceType}/{resourceId}']?.get?.responses?.['200']?.content?.[
+        'application/json'
+      ]?.schema
+    ).toEqual({ $ref: '#/components/schemas/ResourceResponseDto' })
     const collectionResponses = [
       ['journeys', 'JourneysCollectionResponseDto', 'JourneyResponseDto'],
       ['folders', 'FoldersCollectionResponseDto', 'FolderResponseDto'],

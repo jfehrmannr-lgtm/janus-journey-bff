@@ -1,5 +1,15 @@
 ## 2026-10-09
 
+### #JANUS-BFF-0022: Expose Complete Resource Retrieval
+
+**Work**: Plan / Build; Added the authenticated BFF resource retrieval route backed by the new ms-journeys complete-resource endpoint while preserving the BFF payload response convention.
+
+- Added `GET /journeys/resources/:resourceType/:resourceId` for Journey, Folder, and Task retrieval.
+- Preserved nested Journey Folders and Tasks, direct Journey Tasks, and Folder Tasks from the microservice response.
+- Added downstream client forwarding, success/error transformation, parameter validation, Swagger variants, and route coverage.
+
+## 2026-10-09
+
 ### #JANUS-BFF-0021: Normalize Root Resources To Payload
 
 **Work**: Plan / Build; Adapted the `GET /journeys/root` BFF response from the microservice `items` property to the BFF-standard `payload` property.

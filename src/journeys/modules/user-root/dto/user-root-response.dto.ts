@@ -26,3 +26,28 @@ export class UserRootResponseDto {
   })
   registers!: number
 }
+
+export class FolderResourceResponseDto extends FolderResponseDto {
+  @ApiProperty({ type: [TaskResponseDto] })
+  tasks!: TaskResponseDto[]
+}
+
+export class JourneyResourceResponseDto extends JourneyResponseDto {
+  @ApiProperty({ type: [FolderResourceResponseDto] })
+  folders!: FolderResourceResponseDto[]
+
+  @ApiProperty({ type: [TaskResponseDto] })
+  tasks!: TaskResponseDto[]
+}
+
+export class ResourceResponseDto {
+  @ApiProperty({
+    description: 'The complete resource requested by resourceType and resourceId.',
+    oneOf: [
+      { $ref: '#/components/schemas/JourneyResourceResponseDto' },
+      { $ref: '#/components/schemas/FolderResourceResponseDto' },
+      { $ref: '#/components/schemas/TaskResponseDto' }
+    ]
+  })
+  payload!: JourneyResourceResponseDto | FolderResourceResponseDto | TaskResponseDto
+}
