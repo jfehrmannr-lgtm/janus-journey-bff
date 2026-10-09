@@ -35,6 +35,10 @@ export class MsJourneysClient {
     return this.send('GET', this.resourceUrl('/journeys', uid))
   }
 
+  findUserRoot(userId: string): Promise<DownstreamResponse> {
+    return this.send('GET', `/users/${encodeURIComponent(userId)}/root`)
+  }
+
   updateJourney(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
     return this.send('PATCH', this.resourceUrl('/journeys', uid), payload)
   }

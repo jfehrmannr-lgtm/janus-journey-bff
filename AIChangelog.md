@@ -1,5 +1,36 @@
 ## 2026-10-09
 
+### #JANUS-BFF-0021: Normalize Root Resources To Payload
+
+**Work**: Plan / Build; Adapted the `GET /journeys/root` BFF response from the microservice `items` property to the BFF-standard `payload` property.
+
+- Preserved the root resource arrays and `registers` value.
+- Preserved non-success upstream responses without reshaping their error bodies.
+- Added service and E2E coverage for the response normalization.
+
+### #JANUS-BFF-0020: Nest Journeys Domain Routes Under Prefix
+
+**Work**: Plan / Build; Updated the BFF route map so every Journeys-domain module is exposed beneath the `/journeys` domain prefix.
+
+- Moved Journey, Folder, and Task public routes to `/journeys/journeys`, `/journeys/folders`, and `/journeys/tasks`.
+- Preserved the authenticated root route at `/journeys/root`.
+- Updated README route documentation and E2E/Swagger path assertions.
+
+### #JANUS-BFF-0019: Restore Journey Route Prefix Flow
+
+**Work**: Plan / Build; Restored the dedicated `journeys.routes.ts` prefix flow for the authenticated root-resource controller without changing the existing Journey, Folder, or Task public routes.
+
+- Scoped the `/journeys` RouterModule prefix to the User Root module only.
+- Kept resource controllers outside the nested prefix to prevent `/journeys/journeys` regressions.
+
+### #JANUS-BFF-0018: Add Authenticated Journey Root Resources
+
+**Work**: Plan / Build; Added the authenticated BFF `GET /journeys/root` boundary that forwards the validated JWT subject to the `ms-journeys` User root-resource endpoint.
+
+- Added one upstream root-resource request through `MsJourneysClient` without pagination or filtering.
+- Preserved the upstream `items` arrays, ordering, and `registers` value without recalculation.
+- Added nested Swagger response DTOs and coverage for authentication, routing, identity forwarding, empty results, and upstream responses.
+
 ### #JANUS-BFF-0017: Align Journey Swagger Resource Schemas
 
 **Work**: Plan / Build; Aligned BFF Journey, Folder, and Task request and response DTOs with the approved nested parent contract used by `ms-journeys`.

@@ -41,13 +41,17 @@
 - Authentication logic must be reusable.
 - Do not duplicate JWT validation across controllers.
 
-## NestJS
+## NestJS Conventions
 
 - Follow NestJS module and dependency injection conventions.
 - Keep controllers thin.
 - Prefer the following flow: `Controller → BFF/Application Service → Microservice Client`.
 - Use DTOs and validation at external request boundaries.
 - Do not introduce abstractions or architectural patterns before they are required.
+- **NEVER** delete, replace, or overwrite existing files without explicit user authorization.
+- **NEVER** revert or modify existing architectural decisions without explicit user authorization.
+- **ALWAYS** preserve existing code and make only the changes strictly necessary for the requested task.
+- **ALWAYS** inspect uncommitted changes before editing and preserve user modifications.
 
 ## Configuration
 

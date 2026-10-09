@@ -67,10 +67,11 @@ owns concrete User DTO validation and persistence rules.
 
 The BFF exposes authenticated CRUD routes delegated to `ms-journeys`:
 
-| Method                   | Routes                                           | Responsibility                                   |
-| ------------------------ | ------------------------------------------------ | ------------------------------------------------ |
-| `GET`, `POST`            | `/journeys`, `/folders`, `/tasks`                | List or create resources.                        |
-| `GET`, `PATCH`, `DELETE` | `/journeys/:uid`, `/folders/:uid`, `/tasks/:uid` | Retrieve, partially update, or delete resources. |
+| Method                   | Routes                                                                      | Responsibility                                           |
+| ------------------------ | --------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `GET`, `POST`            | `/journeys/journeys`, `/journeys/folders`, `/journeys/tasks`                | List or create resources.                                |
+| `GET`, `PATCH`, `DELETE` | `/journeys/journeys/:uid`, `/journeys/folders/:uid`, `/journeys/tasks/:uid` | Retrieve, partially update, or delete resources.         |
+| `GET`                    | `/journeys/root`                                                            | Retrieve the authenticated User's direct root resources. |
 
 Journey, Folder, and Task are separate BFF resources with resource-specific DTOs
 and validation. Domain resources are identified by `uid`; MongoDB `_id` is not
