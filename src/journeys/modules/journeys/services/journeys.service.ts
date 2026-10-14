@@ -1,8 +1,13 @@
-import { Injectable } from '@nestjs/common'
+import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common'
 import { MsJourneysClient } from '@journeys/clients/ms-journeys.client.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { resolveParent } from '@journeys/utils/resolve-parent.js'
 import type { CreateJourneyDto } from '../dto/create-journey.dto.js'
+import type { ComposeFolderDto, ComposeJourneyDto, ComposeTaskDto } from '../dto/compose-journey.dto.js'
+import type { BulkCreateFolderItemDto } from '../../folders/dto/bulk-create-folder.dto.js'
+import type { BulkCreateTaskItemDto } from '../../tasks/dto/bulk-create-task.dto.js'
+import { FoldersService } from '../../folders/services/folders.service.js'
+import { TasksService } from '../../tasks/services/tasks.service.js'
 import type { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import type { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
@@ -13,10 +18,70 @@ import { buildCollectionResponse } from '@common/collections/collection.builder.
 
 @Injectable()
 export class JourneysService {
-  constructor(private readonly client: MsJourneysClient) {}
+  constructor(
+    private readonly client: MsJourneysClient,
+    private readonly foldersService: FoldersService,
+    private readonly tasksService: TasksService
+  ) {}
 
   create(payload: CreateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
     return this.client.createJourney({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
+  }
+
+  async compose(payload: ComposeJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    this.validateComposeFolders(payload.folders)
+
+    const journeyResult = await this.create(
+      { description: payload.description, metadata: payload.metadata, name: payload.name },
+      identity
+    )
+
+    if (!this.isSuccessful(journeyResult)) return journeyResult
+
+    const journeyUid = this.extractUid(journeyResult.body, 'created Journey')
+    const folders = payload.folders ?? []
+    const folderUids = new Map<string, string>()
+
+    if (folders.length > 0) {
+      const folderItems: BulkCreateFolderItemDto[] = folders.map(
+        ({ clientId, description, metadata, name, orderIndex }) => ({
+          clientId,
+          description,
+          metadata,
+          name,
+          orderIndex,
+          parent: { type: 'journey', uid: journeyUid }
+        })
+      )
+      const folderResult = await this.foldersService.createBulk(folderItems, identity)
+
+      if (!this.isSuccessful(folderResult)) return folderResult
+
+      const createdFolders = this.extractCorrelatedItems(folderResult.body, 'created Folders')
+      for (const folder of folders) {
+        const createdFolder = createdFolders.find((item) => item.clientId === folder.clientId)
+        if (!createdFolder) {
+          throw new BadGatewayException(`The created Folder for clientId ${folder.clientId} was not returned`)
+        }
+        folderUids.set(folder.clientId, this.extractUid(createdFolder.resource, `Folder ${folder.clientId}`))
+      }
+    }
+
+    const taskItems: BulkCreateTaskItemDto[] = [
+      ...(payload.tasks ?? []).map((task) => this.toTaskItem(task, { type: 'journey', uid: journeyUid })),
+      ...folders.flatMap((folder) =>
+        (folder.tasks ?? []).map((task) =>
+          this.toTaskItem(task, { type: 'folder', uid: folderUids.get(folder.clientId) ?? '' })
+        )
+      )
+    ]
+
+    if (taskItems.length > 0) {
+      const taskResult = await this.tasksService.createBulk(taskItems, identity)
+      if (!this.isSuccessful(taskResult)) return taskResult
+    }
+
+    return journeyResult
   }
 
   async findAll(
@@ -41,5 +106,45 @@ export class JourneysService {
 
   remove(uid: string): Promise<DownstreamResponse> {
     return this.client.removeJourney(uid)
+  }
+
+  private validateComposeFolders(folders: ComposeFolderDto[] | undefined): void {
+    const clientIds = new Set<string>()
+
+    for (const folder of folders ?? []) {
+      if (typeof folder.clientId !== 'string' || folder.clientId.trim() === '') {
+        throw new BadRequestException('Every Compose Folder must include a non-empty clientId')
+      }
+      if (clientIds.has(folder.clientId)) {
+        throw new BadRequestException(`Compose Folder clientId values must be unique: ${folder.clientId}`)
+      }
+      clientIds.add(folder.clientId)
+    }
+  }
+
+  private toTaskItem(task: ComposeTaskDto, parent: { uid: string; type: 'journey' | 'folder' }): BulkCreateTaskItemDto {
+    return { ...task, parent }
+  }
+
+  private isSuccessful(result: DownstreamResponse): boolean {
+    return result.status >= 200 && result.status < 300
+  }
+
+  private extractUid(body: unknown, resourceName: string): string {
+    if (this.isRecord(body) && typeof body.uid === 'string' && body.uid !== '') return body.uid
+    throw new BadGatewayException(`The ms-journeys response did not include the UID for the ${resourceName}`)
+  }
+
+  private extractCorrelatedItems(body: unknown, resourceName: string): Array<{ clientId?: string; resource: unknown }> {
+    if (this.isRecord(body) && Array.isArray(body.items)) {
+      return body.items.filter(
+        (item): item is { clientId?: string; resource: unknown } => this.isRecord(item) && 'resource' in item
+      )
+    }
+    throw new BadGatewayException(`The ms-journeys response did not include the ${resourceName}`)
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 }

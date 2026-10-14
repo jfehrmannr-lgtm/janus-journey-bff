@@ -155,3 +155,14 @@ Prefer correcting the underlying DTO metadata and Swagger decorators rather than
 - Applied the function to individual Journey, Folder, and Task creation plus Folder and Task bulk creation, resolving every bulk item before forwarding.
 - Preserved valid non-User parents, optional `clientId`, existing resource fields, and `{ items: resolvedItems }` bulk forwarding.
 - Updated only the approved creation Swagger documentation and added focused utility, service, and client coverage.
+
+## 2026-10-14
+
+### #JANUS-BFF-0025: Compose Journey Resources
+
+**Work**: Plan / Build; Added the authenticated Journey composition endpoint that orchestrates existing Journey, Folder bulk, and Task bulk creation services.
+
+- Added `POST /journeys/journeys/compose` with nested Folder and Task validation, required unique Folder `clientId` values, and Swagger documentation.
+- Created the Journey first, mapped returned Folder UIDs by `clientId`, and submitted one combined Task bulk request for root and nested Folder Tasks.
+- Reused existing JWT parent resolution and resource service methods, returning only the original Journey response after all requested operations succeed.
+- Preserved existing endpoint contracts and avoided changes to microservices, frontend code, resource schemas, and rollback behavior.

@@ -6,6 +6,7 @@ import { FoldersService } from './services/folders.service.js'
 @Module({
   controllers: [FoldersController],
   imports: [MsJourneysClientModule],
-  providers: [FoldersService]
+  providers: [FoldersService],
+  exports: [FoldersService]
 })
 export class FoldersModule {}

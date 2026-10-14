@@ -15,6 +15,7 @@ import { JourneysService } from '../services/journeys.service.js'
 import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { CreateJourneyDto } from '../dto/create-journey.dto.js'
+import { ComposeJourneyDto } from '../dto/compose-journey.dto.js'
 import { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import { JourneyResponseDto } from '../dto/journey-response.dto.js'
 import { JourneysCollectionResponseDto } from '../dto/journeys-collection-response.dto.js'
@@ -44,6 +45,20 @@ export class JourneysController {
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
     return this.writeResponse(response, await this.journeysService.create(payload, identity))
+  }
+
+  @ApiOperation({ summary: 'Compose a Journey with Folders and Tasks' })
+  @ApiBody({ type: ComposeJourneyDto })
+  @ApiResponse({ status: 201, type: JourneyResponseDto })
+  @ApiBadRequestResponse({ description: 'Invalid Compose Journey payload.' })
+  @ApiConflictResponse({ description: 'A composed resource violates a uniqueness constraint.' })
+  @Post('compose')
+  async compose(
+    @Body() payload: ComposeJourneyDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.journeysService.compose(payload, identity))
   }
 
   @ApiOperation({ summary: 'List Journey resources' })
