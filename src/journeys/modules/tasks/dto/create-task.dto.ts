@@ -1,16 +1,17 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { Type } from 'class-transformer'
-import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Length, ValidateNested } from 'class-validator'
+import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Length } from 'class-validator'
 import { ParentReferenceDto } from '@common/parent-reference.dto.js'
 
 export const TASK_STATES = ['pending', 'in-progress', 'complete', 'in-pause', 'discarded'] as const
 export type TaskState = (typeof TASK_STATES)[number]
 
 export class CreateTaskDto {
-  @ApiProperty({ type: ParentReferenceDto })
-  @ValidateNested()
-  @Type(() => ParentReferenceDto)
-  parent!: ParentReferenceDto
+  @ApiPropertyOptional({
+    type: ParentReferenceDto,
+    description: 'Optional parent. When omitted or empty, the authenticated User is used.'
+  })
+  @IsOptional()
+  parent?: unknown
 
   @ApiProperty({ example: 'Understand HTTP' })
   @IsString()

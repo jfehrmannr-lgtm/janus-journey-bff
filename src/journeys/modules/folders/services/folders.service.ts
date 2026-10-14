@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { MsJourneysClient } from '@journeys/clients/ms-journeys.client.js'
+import type { BulkCreateFolderItemDto } from '../dto/bulk-create-folder.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import type { CreateFolderDto } from '../dto/create-folder.dto.js'
 import type { UpdateFolderDto } from '../dto/update-folder.dto.js'
@@ -8,13 +10,19 @@ import type { CollectionResponse } from '@common/collections/collection.types.js
 import { effectivePageSize } from '@common/collections/pagination-query.dto.js'
 import { parseCollectionResult } from '@common/collections/collection.parser.js'
 import { buildCollectionResponse } from '@common/collections/collection.builder.js'
+import { resolveParent } from '@journeys/utils/resolve-parent.js'
 
 @Injectable()
 export class FoldersService {
   constructor(private readonly client: MsJourneysClient) {}
 
-  create(payload: CreateFolderDto): Promise<DownstreamResponse> {
-    return this.client.createFolder(payload)
+  create(payload: CreateFolderDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.createFolder({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
+  }
+
+  async createBulk(items: BulkCreateFolderItemDto[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    const resolvedItems = items.map((item) => ({ ...item, parent: resolveParent(item.parent, identity.sub) }))
+    return this.client.createFoldersBulk(resolvedItems)
   }
 
   async findAll(

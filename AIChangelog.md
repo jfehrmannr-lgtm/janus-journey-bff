@@ -133,3 +133,25 @@ Prefer correcting the underlying DTO metadata and Swagger decorators rather than
 - Do not create duplicate DTOs when existing ones can be reused.
 - Do not modify unrelated endpoints.
 -
+
+## 2026-10-14
+
+### #JANUS-BFF-0023: Resolve Bulk Resource Parents From JWT Identity
+
+**Work**: Plan / Build; Added authenticated BFF parent resolution for direct-array bulk Folder and Task creation requests.
+
+- Added `POST /journeys/folders/bulk` and `POST /journeys/tasks/bulk` routes that validate each array item before forwarding.
+- Derived omitted parents from the validated JWT `sub` as `{ uid, type: 'user' }` and rejected explicit client-provided User parents with HTTP 400.
+- Preserved permitted Journey and Folder parents, optional `clientId`, metadata, ordering, and resource fields while forwarding `{ items: resolvedItems }` to ms-journeys.
+- Added Swagger metadata and service coverage for per-item resolution, explicit User rejection, and prevention of downstream calls on invalid requests.
+
+## 2026-10-14
+
+### #JANUS-BFF-0024: Centralize Creation Parent Resolution
+
+**Work**: Plan / Build; Fixed authenticated User parent resolution across the approved Journey, Folder, and Task creation endpoints without changing downstream services or unrelated routes.
+
+- Added one reusable parent-resolution function for omitted, empty, partial, explicit User, and valid non-User parent inputs.
+- Applied the function to individual Journey, Folder, and Task creation plus Folder and Task bulk creation, resolving every bulk item before forwarding.
+- Preserved valid non-User parents, optional `clientId`, existing resource fields, and `{ items: resolvedItems }` bulk forwarding.
+- Updated only the approved creation Swagger documentation and added focused utility, service, and client coverage.

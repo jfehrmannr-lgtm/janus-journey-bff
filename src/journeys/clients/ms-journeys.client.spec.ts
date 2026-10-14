@@ -29,7 +29,11 @@ describe('MsJourneysClient', () => {
     const client = createClient(request)
 
     await client.createJourney({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
+    await client.createFoldersBulk([{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }])
     await client.findAllFolders()
+    await client.createTasksBulk([
+      { isVisible: true, name: 'Task', parent: { type: 'user', uid: 'user-1' }, state: 'pending' }
+    ])
     await client.findTaskByUid('task/1')
     await client.findUserRoot('user/1')
     await client.findResource('journey', 'journey/1')
@@ -44,7 +48,9 @@ describe('MsJourneysClient', () => {
       }))
     ).toEqual([
       { method: 'POST', url: 'http://localhost:4002/journeys' },
+      { method: 'POST', url: 'http://localhost:4002/folders/bulk' },
       { method: 'GET', url: 'http://localhost:4002/folders' },
+      { method: 'POST', url: 'http://localhost:4002/tasks/bulk' },
       { method: 'GET', url: 'http://localhost:4002/tasks/task%2F1' },
       { method: 'GET', url: 'http://localhost:4002/users/user%2F1/root' },
       { method: 'GET', url: 'http://localhost:4002/users/resources/journey/journey%2F1' },
@@ -55,6 +61,13 @@ describe('MsJourneysClient', () => {
 
     const [, options] = request.mock.calls[0] as unknown as [string, { headers: Record<string, string> }]
     expect(options.headers).toEqual({ accept: 'application/json' })
+
+    expect((request.mock.calls[1][1] as { json: unknown }).json).toEqual({
+      items: [{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }]
+    })
+    expect((request.mock.calls[3][1] as { json: unknown }).json).toEqual({
+      items: [{ isVisible: true, name: 'Task', parent: { type: 'user', uid: 'user-1' }, state: 'pending' }]
+    })
   })
 
   it('preserves downstream responses and maps timeouts', async () => {

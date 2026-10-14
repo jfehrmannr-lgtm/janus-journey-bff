@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { MsJourneysClient } from '@journeys/clients/ms-journeys.client.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
+import { resolveParent } from '@journeys/utils/resolve-parent.js'
 import type { CreateJourneyDto } from '../dto/create-journey.dto.js'
 import type { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
@@ -13,8 +15,8 @@ import { buildCollectionResponse } from '@common/collections/collection.builder.
 export class JourneysService {
   constructor(private readonly client: MsJourneysClient) {}
 
-  create(payload: CreateJourneyDto): Promise<DownstreamResponse> {
-    return this.client.createJourney(payload)
+  create(payload: CreateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.createJourney({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
   }
 
   async findAll(

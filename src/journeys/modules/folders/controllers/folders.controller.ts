@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseArrayPipe, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -18,6 +18,9 @@ import { FolderResponseDto } from '../dto/folder-response.dto.js'
 import { FoldersCollectionResponseDto } from '../dto/folders-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
+import { BulkCreateFolderItemDto } from '../dto/bulk-create-folder.dto.js'
+import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Journeys · Folders')
@@ -26,13 +29,42 @@ export class FoldersController {
   constructor(private readonly foldersService: FoldersService) {}
 
   @ApiOperation({ summary: 'Create a Folder resource' })
-  @ApiBody({ type: CreateFolderDto })
+  @ApiBody({
+    description: 'Optional parent. Omitted or empty parents resolve to the authenticated User.',
+    type: CreateFolderDto
+  })
   @ApiResponse({ status: 201, type: FolderResponseDto })
-  @ApiBadRequestResponse({ description: 'Invalid Folder payload.' })
+  @ApiBadRequestResponse({
+    description: 'Invalid Folder payload, malformed parent, or an explicit User parent was provided.'
+  })
   @ApiConflictResponse({ description: 'The Folder violates a uniqueness constraint.' })
   @Post()
-  async create(@Body() payload: CreateFolderDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.create(payload))
+  async create(
+    @Body() payload: CreateFolderDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.create(payload, identity))
+  }
+
+  @ApiOperation({ summary: 'Bulk create Folder resources' })
+  @ApiBody({
+    description: 'Direct array of Folder items. Omitted parents resolve to the authenticated User.',
+    isArray: true,
+    type: BulkCreateFolderItemDto
+  })
+  @ApiResponse({ status: 201, description: 'Folder resources created successfully.' })
+  @ApiBadRequestResponse({
+    description: 'Invalid Folder payload, malformed parent, or an explicit User parent was provided.'
+  })
+  @ApiConflictResponse({ description: 'A Folder violates a uniqueness constraint.' })
+  @Post('bulk')
+  async createBulk(
+    @Body(new ParseArrayPipe({ items: BulkCreateFolderItemDto })) payload: BulkCreateFolderItemDto[],
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.createBulk(payload, identity))
   }
 
   @ApiOperation({ summary: 'List Folder resources' })

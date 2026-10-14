@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, Res } from '@nestjs/common'
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseArrayPipe, Patch, Post, Query, Res } from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -19,6 +19,9 @@ import { TaskResponseDto } from '../dto/task-response.dto.js'
 import { TasksCollectionResponseDto } from '../dto/tasks-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
+import { BulkCreateTaskItemDto } from '../dto/bulk-create-task.dto.js'
+import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Journeys · Tasks')
@@ -27,13 +30,42 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @ApiOperation({ summary: 'Create a Task resource' })
-  @ApiBody({ type: CreateTaskDto })
+  @ApiBody({
+    description: 'Optional parent. Omitted or empty parents resolve to the authenticated User.',
+    type: CreateTaskDto
+  })
   @ApiResponse({ status: 201, type: TaskResponseDto })
-  @ApiBadRequestResponse({ description: 'Invalid Task payload.' })
+  @ApiBadRequestResponse({
+    description: 'Invalid Task payload, malformed parent, or an explicit User parent was provided.'
+  })
   @ApiConflictResponse({ description: 'The Task violates a uniqueness constraint.' })
   @Post()
-  async create(@Body() payload: CreateTaskDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.create(payload))
+  async create(
+    @Body() payload: CreateTaskDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.create(payload, identity))
+  }
+
+  @ApiOperation({ summary: 'Bulk create Task resources' })
+  @ApiBody({
+    description: 'Direct array of Task items. Omitted parents resolve to the authenticated User.',
+    isArray: true,
+    type: BulkCreateTaskItemDto
+  })
+  @ApiResponse({ status: 201, description: 'Task resources created successfully.' })
+  @ApiBadRequestResponse({
+    description: 'Invalid Task payload, malformed parent, or an explicit User parent was provided.'
+  })
+  @ApiConflictResponse({ description: 'A Task violates a uniqueness constraint.' })
+  @Post('bulk')
+  async createBulk(
+    @Body(new ParseArrayPipe({ items: BulkCreateTaskItemDto })) payload: BulkCreateTaskItemDto[],
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.createBulk(payload, identity))
   }
 
   @ApiOperation({ summary: 'List Task resources' })

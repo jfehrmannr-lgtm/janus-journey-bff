@@ -12,6 +12,8 @@ import {
   ApiTags
 } from '@nestjs/swagger'
 import { JourneysService } from '../services/journeys.service.js'
+import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { CreateJourneyDto } from '../dto/create-journey.dto.js'
 import { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import { JourneyResponseDto } from '../dto/journey-response.dto.js'
@@ -26,13 +28,22 @@ export class JourneysController {
   constructor(private readonly journeysService: JourneysService) {}
 
   @ApiOperation({ summary: 'Create a Journey resource' })
-  @ApiBody({ type: CreateJourneyDto })
+  @ApiBody({
+    description: 'Optional parent. Omitted or empty parents resolve to the authenticated User.',
+    type: CreateJourneyDto
+  })
   @ApiResponse({ status: 201, type: JourneyResponseDto })
-  @ApiBadRequestResponse({ description: 'Invalid Journey payload.' })
+  @ApiBadRequestResponse({
+    description: 'Invalid Journey payload, malformed parent, or an explicit User parent was provided.'
+  })
   @ApiConflictResponse({ description: 'The Journey violates a uniqueness constraint.' })
   @Post()
-  async create(@Body() payload: CreateJourneyDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.create(payload))
+  async create(
+    @Body() payload: CreateJourneyDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.journeysService.create(payload, identity))
   }
 
   @ApiOperation({ summary: 'List Journey resources' })

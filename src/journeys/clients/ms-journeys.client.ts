@@ -2,10 +2,12 @@ import { BadGatewayException, GatewayTimeoutException, Injectable } from '@nestj
 import { ConfigService } from '@nestjs/config'
 import { HttpClient, HttpNetworkError, HttpTimeoutError, type HttpQuery, type HttpResponse } from '@nestjs/http-client'
 import type { CreateFolderDto } from '../modules/folders/dto/create-folder.dto.js'
+import type { ResolvedBulkFolderItem } from '../modules/folders/dto/bulk-create-folder.dto.js'
 import type { UpdateFolderDto } from '../modules/folders/dto/update-folder.dto.js'
 import type { CreateJourneyDto } from '../modules/journeys/dto/create-journey.dto.js'
 import type { UpdateJourneyDto } from '../modules/journeys/dto/update-journey.dto.js'
 import type { CreateTaskDto } from '../modules/tasks/dto/create-task.dto.js'
+import type { ResolvedBulkTaskItem } from '../modules/tasks/dto/bulk-create-task.dto.js'
 import type { UpdateTaskDto } from '../modules/tasks/dto/update-task.dto.js'
 import type { DownstreamResponse } from '../types/ms-journeys.types.js'
 import type { ResourceType } from '../modules/user-root/dto/resource-params.dto.js'
@@ -56,6 +58,10 @@ export class MsJourneysClient {
     return this.send('POST', '/folders', payload)
   }
 
+  createFoldersBulk(items: ResolvedBulkFolderItem[]): Promise<DownstreamResponse> {
+    return this.send('POST', '/folders/bulk', { items })
+  }
+
   findAllFolders(query: PaginationQueryDto): Promise<DownstreamResponse> {
     return this.send('GET', '/folders', undefined, query)
   }
@@ -74,6 +80,10 @@ export class MsJourneysClient {
 
   createTask(payload: CreateTaskDto): Promise<DownstreamResponse> {
     return this.send('POST', '/tasks', payload)
+  }
+
+  createTasksBulk(items: ResolvedBulkTaskItem[]): Promise<DownstreamResponse> {
+    return this.send('POST', '/tasks/bulk', { items })
   }
 
   findAllTasks(query: PaginationQueryDto): Promise<DownstreamResponse> {
