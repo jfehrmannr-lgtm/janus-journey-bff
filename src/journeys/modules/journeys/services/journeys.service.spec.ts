@@ -126,4 +126,62 @@ describe('JourneysService', () => {
     ).rejects.toBeInstanceOf(BadRequestException)
     expect(createJourney).not.toHaveBeenCalled()
   })
+
+  it('compensates by removing the Journey when Folder creation fails', async () => {
+    const journeyResult = { status: 201, headers: {}, body: { uid: 'journey-1' } }
+    const folderFailure = { status: 409, headers: {}, body: { message: 'Folder failed' } }
+    const createJourney = jest.fn().mockResolvedValue(journeyResult)
+    const createFoldersBulk = jest.fn().mockResolvedValue(folderFailure)
+    const removeJourney = jest.fn().mockResolvedValue({ status: 204, headers: {}, body: undefined })
+    const service = new JourneysService(
+      { createJourney, removeJourney } as unknown as MsJourneysClient,
+      { createBulk: createFoldersBulk } as never,
+      {} as never
+    )
+
+    const result = await service.compose(
+      { name: 'Journey', folders: [{ clientId: 'folder-1', name: 'Folder' }] },
+      { sub: 'user-1' }
+    )
+
+    expect(result).toBe(folderFailure)
+    expect(removeJourney).toHaveBeenCalledWith('journey-1')
+  })
+
+  it('compensates by removing the Journey when Task creation throws', async () => {
+    const journeyResult = { status: 201, headers: {}, body: { uid: 'journey-1' } }
+    const creationError = new Error('Task service unavailable')
+    const createJourney = jest.fn().mockResolvedValue(journeyResult)
+    const createTasksBulk = jest.fn().mockRejectedValue(creationError)
+    const removeJourney = jest.fn().mockResolvedValue({ status: 204, headers: {}, body: undefined })
+    const service = new JourneysService(
+      { createJourney, removeJourney } as unknown as MsJourneysClient,
+      {} as never,
+      { createBulk: createTasksBulk } as never
+    )
+
+    await expect(
+      service.compose(
+        { name: 'Journey', tasks: [{ isVisible: true, name: 'Task', state: 'pending' }] },
+        { sub: 'user-1' }
+      )
+    ).rejects.toBe(creationError)
+    expect(removeJourney).toHaveBeenCalledWith('journey-1')
+  })
+
+  it('does not compensate when Journey creation fails', async () => {
+    const journeyFailure = { status: 400, headers: {}, body: { message: 'Journey failed' } }
+    const createJourney = jest.fn().mockResolvedValue(journeyFailure)
+    const removeJourney = jest.fn()
+    const service = new JourneysService(
+      { createJourney, removeJourney } as unknown as MsJourneysClient,
+      {} as never,
+      {} as never
+    )
+
+    const result = await service.compose({ name: 'Journey' }, { sub: 'user-1' })
+
+    expect(result).toBe(journeyFailure)
+    expect(removeJourney).not.toHaveBeenCalled()
+  })
 })

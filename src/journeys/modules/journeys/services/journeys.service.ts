@@ -1,4 +1,4 @@
-import { BadGatewayException, BadRequestException, Injectable } from '@nestjs/common'
+import { BadGatewayException, BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { MsJourneysClient } from '@journeys/clients/ms-journeys.client.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 import { resolveParent } from '@journeys/utils/resolve-parent.js'
@@ -18,6 +18,8 @@ import { buildCollectionResponse } from '@common/collections/collection.builder.
 
 @Injectable()
 export class JourneysService {
+  private readonly logger = new Logger(JourneysService.name)
+
   constructor(
     private readonly client: MsJourneysClient,
     private readonly foldersService: FoldersService,
@@ -39,49 +41,64 @@ export class JourneysService {
     if (!this.isSuccessful(journeyResult)) return journeyResult
 
     const journeyUid = this.extractUid(journeyResult.body, 'created Journey')
-    const folders = payload.folders ?? []
-    const folderUids = new Map<string, string>()
 
-    if (folders.length > 0) {
-      const folderItems: BulkCreateFolderItemDto[] = folders.map(
-        ({ clientId, description, metadata, name, orderIndex }) => ({
-          clientId,
-          description,
-          metadata,
-          name,
-          orderIndex,
-          parent: { type: 'journey', uid: journeyUid }
-        })
-      )
-      const folderResult = await this.foldersService.createBulk(folderItems, identity)
+    try {
+      const folders = payload.folders ?? []
+      const folderUids = new Map<string, string>()
 
-      if (!this.isSuccessful(folderResult)) return folderResult
-
-      const createdFolders = this.extractCorrelatedItems(folderResult.body, 'created Folders')
-      for (const folder of folders) {
-        const createdFolder = createdFolders.find((item) => item.clientId === folder.clientId)
-        if (!createdFolder) {
-          throw new BadGatewayException(`The created Folder for clientId ${folder.clientId} was not returned`)
-        }
-        folderUids.set(folder.clientId, this.extractUid(createdFolder.resource, `Folder ${folder.clientId}`))
-      }
-    }
-
-    const taskItems: BulkCreateTaskItemDto[] = [
-      ...(payload.tasks ?? []).map((task) => this.toTaskItem(task, { type: 'journey', uid: journeyUid })),
-      ...folders.flatMap((folder) =>
-        (folder.tasks ?? []).map((task) =>
-          this.toTaskItem(task, { type: 'folder', uid: folderUids.get(folder.clientId) ?? '' })
+      if (folders.length > 0) {
+        const folderItems: BulkCreateFolderItemDto[] = folders.map(
+          ({ clientId, description, metadata, name, orderIndex }) => ({
+            clientId,
+            description,
+            metadata,
+            name,
+            orderIndex,
+            parent: { type: 'journey', uid: journeyUid }
+          })
         )
+        const folderResult = await this.foldersService.createBulk(folderItems, identity)
+
+        if (!this.isSuccessful(folderResult)) {
+          await this.compensateJourney(journeyUid)
+          return folderResult
+        }
+
+        const createdFolders = this.extractCorrelatedItems(folderResult.body, 'created Folders')
+        for (const folder of folders) {
+          const createdFolder = createdFolders.find((item) => item.clientId === folder.clientId)
+          if (!createdFolder) {
+            throw new BadGatewayException(`The created Folder for clientId ${folder.clientId} was not returned`)
+          }
+          folderUids.set(folder.clientId, this.extractUid(createdFolder.resource, `Folder ${folder.clientId}`))
+        }
+      }
+
+      const rootTaskItems = (payload.tasks ?? []).map((task) =>
+        this.toTaskItem(task, { type: 'journey', uid: journeyUid })
       )
-    ]
 
-    if (taskItems.length > 0) {
-      const taskResult = await this.tasksService.createBulk(taskItems, identity)
-      if (!this.isSuccessful(taskResult)) return taskResult
+      const folderTaskItems = folders.flatMap((folder) => {
+        const folderUid = folderUids.get(folder.clientId) ?? ''
+
+        return (folder.tasks ?? []).map((task) => this.toTaskItem(task, { type: 'folder', uid: folderUid }))
+      })
+
+      const taskItems: BulkCreateTaskItemDto[] = [...rootTaskItems, ...folderTaskItems]
+
+      if (taskItems.length > 0) {
+        const taskResult = await this.tasksService.createBulk(taskItems, identity)
+        if (!this.isSuccessful(taskResult)) {
+          await this.compensateJourney(journeyUid)
+          return taskResult
+        }
+      }
+
+      return journeyResult
+    } catch (error: unknown) {
+      await this.compensateJourney(journeyUid)
+      throw error
     }
-
-    return journeyResult
   }
 
   async findAll(
@@ -146,5 +163,19 @@ export class JourneysService {
 
   private isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
+  }
+
+  private async compensateJourney(uid: string): Promise<void> {
+    try {
+      const result = await this.remove(uid)
+      if (!this.isSuccessful(result)) {
+        this.logger.error(`Compose Journey compensation failed for ${uid}: DELETE returned ${result.status}`)
+      }
+    } catch (error: unknown) {
+      this.logger.error(
+        `Compose Journey compensation failed for ${uid}`,
+        error instanceof Error ? error.stack : String(error)
+      )
+    }
   }
 }

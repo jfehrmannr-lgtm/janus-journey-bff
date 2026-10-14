@@ -166,3 +166,22 @@ Prefer correcting the underlying DTO metadata and Swagger decorators rather than
 - Created the Journey first, mapped returned Folder UIDs by `clientId`, and submitted one combined Task bulk request for root and nested Folder Tasks.
 - Reused existing JWT parent resolution and resource service methods, returning only the original Journey response after all requested operations succeed.
 - Preserved existing endpoint contracts and avoided changes to microservices, frontend code, resource schemas, and rollback behavior.
+
+## 2026-10-14
+
+### #JANUS-BFF-0026: Compensate Failed Compose Journey Creation
+
+**Work**: Plan / Build; Added failure compensation to the existing Compose Journey orchestration while preserving its response and downstream error behavior.
+
+- Reused the existing `JourneysService.remove()` operation, backed by the Journey DELETE client request, after Folder or Task creation failures.
+- Awaited compensation before returning, logged failed deletion attempts, and preserved the original downstream response or thrown creation error.
+- Added coverage proving Folder failure compensation, thrown Task failure compensation, and no deletion when Journey creation fails.
+
+## 2026-10-14
+
+### #JANUS-BFF-0027: Clarify Compose Task Mapping
+
+**Work**: Plan / Build; Refactored Compose Journey task-item construction for readability without changing orchestration behavior.
+
+- Named root Journey Tasks and nested Folder Tasks separately before combining them into the existing single bulk request.
+- Preserved task ordering, parent assignment, and downstream request behavior.
