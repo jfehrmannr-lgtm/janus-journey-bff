@@ -12,3 +12,13 @@ export class FoldersCollectionResponseDto {
   @ApiProperty({ type: Object, description: 'No filters are currently supported.' })
   filters!: Record<string, never>
 }
+
+export class FoldersPayloadResponseDto {
+  @ApiProperty({ type: FolderResponseDto })
+  payload!: FolderResponseDto
+}
+
+export class FoldersPayloadCollectionResponseDto {
+  @ApiProperty({ type: [FolderResponseDto] })
+  payload!: FolderResponseDto[]
+}

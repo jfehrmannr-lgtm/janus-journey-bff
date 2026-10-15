@@ -1,3 +1,15 @@
+## 2026-10-15
+
+### #JANUS-BFF-0028: Standardize Folder and Task Creation Responses
+
+**Work**: Refactor / API Contracts; Standardized the public BFF creation responses for Folder and Task resources without changing request validation, downstream creation behavior, or Journey composition internals.
+
+- Added explicit single-resource and array-resource payload response DTOs for Folder and Task creation.
+- Wrapped successful `POST /journeys/folders` and `POST /journeys/tasks` responses as `{ payload: resource }`.
+- Converted successful bulk creation correlation responses from `{ items: [{ resource }] }` to `{ payload: [resource] }` for `/journeys/folders/bulk` and `/journeys/tasks/bulk`.
+- Preserved upstream error responses, status codes, authentication, validation, and raw service responses used by Journey composition.
+- Added E2E coverage for all four response bodies and their generated Swagger schemas.
+
 ## 2026-10-09
 
 ### #JANUS-BFF-0022: Expose Complete Resource Retrieval

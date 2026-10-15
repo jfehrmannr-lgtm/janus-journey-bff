@@ -12,3 +12,13 @@ export class TasksCollectionResponseDto {
   @ApiProperty({ type: Object, description: 'No filters are currently supported.' })
   filters!: Record<string, never>
 }
+
+export class TasksPayloadResponseDto {
+  @ApiProperty({ type: TaskResponseDto })
+  payload!: TaskResponseDto
+}
+
+export class TasksPayloadCollectionResponseDto {
+  @ApiProperty({ type: [TaskResponseDto] })
+  payload!: TaskResponseDto[]
+}

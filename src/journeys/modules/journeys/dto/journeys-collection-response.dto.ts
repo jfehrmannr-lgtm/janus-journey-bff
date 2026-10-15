@@ -12,3 +12,8 @@ export class JourneysCollectionResponseDto {
   @ApiProperty({ type: Object, description: 'No filters are currently supported.' })
   filters!: Record<string, never>
 }
+
+export class JourneysPayloadResponseDto {
+  @ApiProperty({ type: JourneyResponseDto })
+  payload!: JourneyResponseDto
+}

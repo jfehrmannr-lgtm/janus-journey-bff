@@ -51,11 +51,13 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   const updateJourney = jest.fn()
   const removeJourney = jest.fn()
   const createFolder = jest.fn()
+  const createFoldersBulk = jest.fn()
   const findAllFolders = jest.fn()
   const findFolderByUid = jest.fn()
   const updateFolder = jest.fn()
   const removeFolder = jest.fn()
   const createTask = jest.fn()
+  const createTasksBulk = jest.fn()
   const findAllTasks = jest.fn()
   const findTaskByUid = jest.fn()
   const updateTask = jest.fn()
@@ -84,11 +86,13 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       updateJourney,
       removeJourney,
       createFolder,
+      createFoldersBulk,
       findAllFolders,
       findFolderByUid,
       updateFolder,
       removeFolder,
       createTask,
+      createTasksBulk,
       findAllTasks,
       findTaskByUid,
       updateTask,
@@ -120,8 +124,26 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       status: 200
     })
     createJourney.mockResolvedValue({ ...success, status: 201 })
-    createFolder.mockResolvedValue({ ...success, status: 201 })
-    createTask.mockResolvedValue({ ...success, status: 201 })
+    createFolder.mockResolvedValue({
+      body: { uid: 'folder-1', type: 'folder' },
+      headers: {},
+      status: 201
+    })
+    createFoldersBulk.mockResolvedValue({
+      body: { items: [{ clientId: 'folder-client-1', resource: { uid: 'folder-1', type: 'folder' } }] },
+      headers: {},
+      status: 201
+    })
+    createTask.mockResolvedValue({
+      body: { uid: 'task-1', type: 'task' },
+      headers: {},
+      status: 201
+    })
+    createTasksBulk.mockResolvedValue({
+      body: { items: [{ clientId: 'task-client-1', resource: { uid: 'task-1', type: 'task' } }] },
+      headers: {},
+      status: 201
+    })
     removeJourney.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
     removeFolder.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
     removeTask.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
@@ -134,8 +156,10 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .overrideProvider(MsJourneysClient)
       .useValue({
         createFolder,
+        createFoldersBulk,
         createJourney,
         createTask,
+        createTasksBulk,
         findAllFolders,
         findAllJourneys,
         findAllTasks,
@@ -275,11 +299,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   it('delegates all resource CRUD routes using domain UIDs', async () => {
     const auth = { Authorization: 'Bearer token' }
 
-    await request(app.getHttpServer())
-      .post('/journeys/journeys')
-      .set(auth)
-      .send({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
-      .expect(201)
+    await request(app.getHttpServer()).post('/journeys/journeys').set(auth).send({ name: 'Journey' }).expect(201)
     await request(app.getHttpServer()).get('/journeys/journeys?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/journeys/journey-1').set(auth).expect(200)
     await request(app.getHttpServer())
@@ -294,11 +314,18 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .expect(200)
     await request(app.getHttpServer()).delete('/journeys/journeys/journey-1').set(auth).expect(204)
 
-    await request(app.getHttpServer())
+    const folderResponse = await request(app.getHttpServer())
       .post('/journeys/folders')
       .set(auth)
       .send({ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } })
       .expect(201)
+    expect(folderResponse.body).toEqual({ payload: { uid: 'folder-1', type: 'folder' } })
+    const foldersBulkResponse = await request(app.getHttpServer())
+      .post('/journeys/folders/bulk')
+      .set(auth)
+      .send([{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }])
+      .expect(201)
+    expect(foldersBulkResponse.body).toEqual({ payload: [{ uid: 'folder-1', type: 'folder' }] })
     await request(app.getHttpServer()).get('/journeys/folders?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/folders/folder-1').set(auth).expect(200)
     await request(app.getHttpServer())
@@ -313,18 +340,30 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .expect(200)
     await request(app.getHttpServer()).delete('/journeys/folders/folder-1').set(auth).expect(204)
 
-    await request(app.getHttpServer())
+    const taskResponse = await request(app.getHttpServer())
       .post('/journeys/tasks')
       .set(auth)
       .send({ isVisible: true, name: 'Task', parent: { type: 'folder', uid: 'folder-1' }, state: 'pending' })
       .expect(201)
+    expect(taskResponse.body).toEqual({ payload: { uid: 'task-1', type: 'task' } })
+    const tasksBulkResponse = await request(app.getHttpServer())
+      .post('/journeys/tasks/bulk')
+      .set(auth)
+      .send([{ isVisible: true, name: 'Task', parent: { type: 'folder', uid: 'folder-1' }, state: 'pending' }])
+      .expect(201)
+    expect(tasksBulkResponse.body).toEqual({ payload: [{ uid: 'task-1', type: 'task' }] })
     await request(app.getHttpServer()).get('/journeys/tasks?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/tasks/task-1').set(auth).expect(200)
     await request(app.getHttpServer()).put('/journeys/tasks/task-1').set(auth).send({ state: 'complete' }).expect(404)
     await request(app.getHttpServer()).patch('/journeys/tasks/task-1').set(auth).send({ isVisible: false }).expect(200)
     await request(app.getHttpServer()).delete('/journeys/tasks/task-1').set(auth).expect(204)
 
-    expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
+    expect(createJourney).toHaveBeenCalledWith({
+      description: undefined,
+      metadata: undefined,
+      name: 'Journey',
+      parent: { type: 'user', uid: 'subject-123' }
+    })
     expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
     expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })
     expect(removeJourney).toHaveBeenCalledWith('journey-1')
@@ -408,7 +447,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         $ref: `#/components/schemas/${itemDto}`
       })
 
-      expect(createProperties?.parent).toEqual({ $ref: '#/components/schemas/ParentReferenceDto' })
+      expect(createProperties?.parent).toMatchObject({ allOf: [{ $ref: '#/components/schemas/ParentReferenceDto' }] })
       expect(updateProperties?.parent).toEqual({ $ref: '#/components/schemas/ParentReferenceDto' })
       expect(createProperties?.parentUid).toBeUndefined()
       expect(updateProperties?.parentUid).toBeUndefined()
@@ -438,6 +477,36 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       expect(document.paths[`/journeys/${resource}/{uid}`]?.put).toBeUndefined()
       expect(document.paths[`/journeys/${resource}/{uid}`]?.patch).toBeDefined()
     }
+
+    expect(
+      document.paths['/journeys/folders']?.post?.responses?.['201']?.content?.['application/json']?.schema
+    ).toEqual({
+      $ref: '#/components/schemas/FoldersPayloadResponseDto'
+    })
+    expect(
+      document.paths['/journeys/folders/bulk']?.post?.responses?.['201']?.content?.['application/json']?.schema
+    ).toEqual({ $ref: '#/components/schemas/FoldersPayloadCollectionResponseDto' })
+    expect(document.paths['/journeys/tasks']?.post?.responses?.['201']?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/TasksPayloadResponseDto'
+    })
+    expect(
+      document.paths['/journeys/tasks/bulk']?.post?.responses?.['201']?.content?.['application/json']?.schema
+    ).toEqual({ $ref: '#/components/schemas/TasksPayloadCollectionResponseDto' })
+
+    expect(document.components?.schemas?.FoldersPayloadResponseDto?.properties?.payload).toEqual({
+      $ref: '#/components/schemas/FolderResponseDto'
+    })
+    expect(document.components?.schemas?.FoldersPayloadCollectionResponseDto?.properties?.payload).toEqual({
+      type: 'array',
+      items: { $ref: '#/components/schemas/FolderResponseDto' }
+    })
+    expect(document.components?.schemas?.TasksPayloadResponseDto?.properties?.payload).toEqual({
+      $ref: '#/components/schemas/TaskResponseDto'
+    })
+    expect(document.components?.schemas?.TasksPayloadCollectionResponseDto?.properties?.payload).toEqual({
+      type: 'array',
+      items: { $ref: '#/components/schemas/TaskResponseDto' }
+    })
 
     expect(document.components?.schemas?.ParentReferenceDto?.properties).toEqual({
       uid: expect.objectContaining({ example: 'journey-123', type: 'string' }),

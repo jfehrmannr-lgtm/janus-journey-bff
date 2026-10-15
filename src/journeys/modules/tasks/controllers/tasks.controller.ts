@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseArrayPipe, Patch, Post, Query, Res } from '@nestjs/common'
+import {
+  BadGatewayException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseArrayPipe,
+  Patch,
+  Post,
+  Query,
+  Res
+} from '@nestjs/common'
 import type { Response } from 'express'
 import {
   ApiBadRequestResponse,
@@ -16,7 +29,11 @@ import { TasksService } from '../services/tasks.service.js'
 import { CreateTaskDto } from '../dto/create-task.dto.js'
 import { UpdateTaskDto } from '../dto/update-task.dto.js'
 import { TaskResponseDto } from '../dto/task-response.dto.js'
-import { TasksCollectionResponseDto } from '../dto/tasks-collection-response.dto.js'
+import {
+  TasksCollectionResponseDto,
+  TasksPayloadCollectionResponseDto,
+  TasksPayloadResponseDto
+} from '../dto/tasks-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 import { BulkCreateTaskItemDto } from '../dto/bulk-create-task.dto.js'
@@ -34,7 +51,7 @@ export class TasksController {
     description: 'Optional parent. Omitted or empty parents resolve to the authenticated User.',
     type: CreateTaskDto
   })
-  @ApiResponse({ status: 201, type: TaskResponseDto })
+  @ApiResponse({ status: 201, type: TasksPayloadResponseDto })
   @ApiBadRequestResponse({
     description: 'Invalid Task payload, malformed parent, or an explicit User parent was provided.'
   })
@@ -45,7 +62,9 @@ export class TasksController {
     @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.create(payload, identity))
+    const result = await this.tasksService.create(payload, identity)
+    const body = this.isSuccessful(result.status) ? { payload: result.body } : undefined
+    return this.writeResponse(response, result, body)
   }
 
   @ApiOperation({ summary: 'Bulk create Task resources' })
@@ -54,7 +73,7 @@ export class TasksController {
     isArray: true,
     type: BulkCreateTaskItemDto
   })
-  @ApiResponse({ status: 201, description: 'Task resources created successfully.' })
+  @ApiResponse({ status: 201, type: TasksPayloadCollectionResponseDto })
   @ApiBadRequestResponse({
     description: 'Invalid Task payload, malformed parent, or an explicit User parent was provided.'
   })
@@ -65,7 +84,8 @@ export class TasksController {
     @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.createBulk(payload, identity))
+    const result = await this.tasksService.createBulk(payload, identity)
+    return this.writeResponse(response, result, this.getBulkPayload(result))
   }
 
   @ApiOperation({ summary: 'List Task resources' })
@@ -128,13 +148,35 @@ export class TasksController {
     return this.writeResponse(response, await this.tasksService.remove(uid))
   }
 
-  private writeResponse(response: Response, result: DownstreamResponse): unknown {
+  private writeResponse(response: Response, result: DownstreamResponse, body?: unknown): unknown {
     response.status(result.status)
 
     for (const [name, value] of Object.entries(result.headers)) {
       response.setHeader(name, value)
     }
 
-    return result.body
+    return body ?? result.body
   }
+
+  private getBulkPayload(result: DownstreamResponse): unknown {
+    if (!this.isSuccessful(result.status)) return undefined
+    if (!isBulkResponse(result.body)) throw new BadGatewayException('The ms-journeys bulk Task response was invalid')
+    if (!result.body.items.every(isCreatedResource)) {
+      throw new BadGatewayException('The ms-journeys bulk Task response did not include created resources')
+    }
+
+    return { payload: result.body.items.map((item) => item.resource) }
+  }
+
+  private isSuccessful(status: number): boolean {
+    return status >= 200 && status < 300
+  }
+}
+
+const isBulkResponse = (body: unknown): body is { items: unknown[] } => {
+  return typeof body === 'object' && body !== null && 'items' in body && Array.isArray(body.items)
+}
+
+const isCreatedResource = (item: unknown): item is { resource: unknown } => {
+  return typeof item === 'object' && item !== null && 'resource' in item
 }

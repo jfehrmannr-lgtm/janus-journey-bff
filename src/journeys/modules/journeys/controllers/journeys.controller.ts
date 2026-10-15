@@ -18,7 +18,7 @@ import { CreateJourneyDto } from '../dto/create-journey.dto.js'
 import { ComposeJourneyDto } from '../dto/compose-journey.dto.js'
 import { UpdateJourneyDto } from '../dto/update-journey.dto.js'
 import { JourneyResponseDto } from '../dto/journey-response.dto.js'
-import { JourneysCollectionResponseDto } from '../dto/journeys-collection-response.dto.js'
+import { JourneysCollectionResponseDto, JourneysPayloadResponseDto } from '../dto/journeys-collection-response.dto.js'
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 
@@ -33,7 +33,7 @@ export class JourneysController {
     description: 'Optional parent. Omitted or empty parents resolve to the authenticated User.',
     type: CreateJourneyDto
   })
-  @ApiResponse({ status: 201, type: JourneyResponseDto })
+  @ApiResponse({ status: 201, type: JourneysPayloadResponseDto })
   @ApiBadRequestResponse({
     description: 'Invalid Journey payload, malformed parent, or an explicit User parent was provided.'
   })
@@ -44,12 +44,13 @@ export class JourneysController {
     @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.create(payload, identity))
+    const result = this.writeResponse(response, await this.journeysService.create(payload, identity))
+    return { payload: result }
   }
 
   @ApiOperation({ summary: 'Compose a Journey with Folders and Tasks' })
   @ApiBody({ type: ComposeJourneyDto })
-  @ApiResponse({ status: 201, type: JourneyResponseDto })
+  @ApiResponse({ status: 201, type: JourneysPayloadResponseDto })
   @ApiBadRequestResponse({ description: 'Invalid Compose Journey payload.' })
   @ApiConflictResponse({ description: 'A composed resource violates a uniqueness constraint.' })
   @Post('compose')
@@ -58,7 +59,8 @@ export class JourneysController {
     @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.compose(payload, identity))
+    const result = this.writeResponse(response, await this.journeysService.compose(payload, identity))
+    return { payload: result }
   }
 
   @ApiOperation({ summary: 'List Journey resources' })
