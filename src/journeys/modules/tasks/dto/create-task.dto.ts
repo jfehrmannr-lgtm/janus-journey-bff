@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsBoolean, IsIn, IsObject, IsOptional, IsString, Length } from 'class-validator'
 import { ParentReferenceDto } from '@common/parent-reference.dto.js'
 
-export const TASK_STATES = ['pending', 'in-progress', 'complete', 'in-pause', 'discarded'] as const
+export const TASK_STATES = ['pending', 'in-progress', 'completed', 'in-pause', 'discarded'] as const
 export type TaskState = (typeof TASK_STATES)[number]
 
 export class CreateTaskDto {

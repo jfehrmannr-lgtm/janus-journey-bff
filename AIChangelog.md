@@ -1,3 +1,12 @@
+## 2026-10-19
+
+### #JANUS-BFF-0029: Standardize Completed Task State
+
+**Work**: Fix / Task Contracts; Updated the BFF Task state contract and validation to accept only `completed` for completed Tasks.
+
+- Updated the shared BFF Task state list used by create, update, bulk, composition, and response DTOs.
+- Updated end-to-end request coverage without changing authentication, routing, or downstream behavior.
+
 ## 2026-10-15
 
 ### #JANUS-BFF-0028: Standardize Folder and Task Creation Responses

@@ -354,7 +354,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     expect(tasksBulkResponse.body).toEqual({ payload: [{ uid: 'task-1', type: 'task' }] })
     await request(app.getHttpServer()).get('/journeys/tasks?page=1&size=20').set(auth).expect(200)
     await request(app.getHttpServer()).get('/journeys/tasks/task-1').set(auth).expect(200)
-    await request(app.getHttpServer()).put('/journeys/tasks/task-1').set(auth).send({ state: 'complete' }).expect(404)
+    await request(app.getHttpServer()).put('/journeys/tasks/task-1').set(auth).send({ state: 'completed' }).expect(404)
     await request(app.getHttpServer()).patch('/journeys/tasks/task-1').set(auth).send({ isVisible: false }).expect(200)
     await request(app.getHttpServer()).delete('/journeys/tasks/task-1').set(auth).expect(204)
 
