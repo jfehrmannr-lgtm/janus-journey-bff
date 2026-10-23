@@ -12,11 +12,13 @@ import type { UpdateTaskDto } from '../modules/tasks/dto/update-task.dto.js'
 import type { DownstreamResponse } from '../types/ms-journeys.types.js'
 import type { ResourceType } from '../modules/user-root/dto/resource-params.dto.js'
 import type { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
+import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 
 @Injectable()
 export class MsJourneysClient {
   private readonly baseUrl: string
   private readonly timeout: number
+  private readonly apiKey: string
 
   constructor(
     private readonly http: HttpClient,
@@ -24,95 +26,109 @@ export class MsJourneysClient {
   ) {
     this.baseUrl = config.getOrThrow<string>('MS_JOURNEYS_BASE_URL').replace(/\/+$/, '')
     this.timeout = config.getOrThrow<number>('MS_JOURNEYS_TIMEOUT_MS')
+    const apiKey = config.getOrThrow<string>('MS_JOURNEYS_API_KEY')
+    if (typeof apiKey !== 'string' || apiKey.trim() === '') {
+      throw new Error('MS_JOURNEYS_API_KEY is required')
+    }
+    this.apiKey = apiKey
   }
 
-  createJourney(payload: CreateJourneyDto): Promise<DownstreamResponse> {
-    return this.send('POST', '/journeys', payload)
+  createJourney(payload: CreateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('POST', '/journeys', identity, payload)
   }
 
-  findAllJourneys(query: PaginationQueryDto): Promise<DownstreamResponse> {
-    return this.send('GET', '/journeys', undefined, query)
+  findAllJourneys(query: PaginationQueryDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', '/journeys', identity, undefined, query)
   }
 
-  findJourneyByUid(uid: string): Promise<DownstreamResponse> {
-    return this.send('GET', this.resourceUrl('/journeys', uid))
+  findJourneyByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', this.resourceUrl('/journeys', uid), identity)
   }
 
-  findUserRoot(userId: string): Promise<DownstreamResponse> {
-    return this.send('GET', `/users/${encodeURIComponent(userId)}/root`)
+  findUserRoot(userId: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', `/users/${encodeURIComponent(userId)}/root`, identity)
   }
 
-  findResource(resourceType: ResourceType, resourceId: string): Promise<DownstreamResponse> {
-    return this.send('GET', `/users/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}`)
+  findResource(
+    resourceType: ResourceType,
+    resourceId: string,
+    identity: AuthenticatedIdentity
+  ): Promise<DownstreamResponse> {
+    return this.send(
+      'GET',
+      `/users/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(resourceId)}`,
+      identity
+    )
   }
 
-  updateJourney(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
-    return this.send('PATCH', this.resourceUrl('/journeys', uid), payload)
+  updateJourney(uid: string, payload: UpdateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('PATCH', this.resourceUrl('/journeys', uid), identity, payload)
   }
 
-  removeJourney(uid: string): Promise<DownstreamResponse> {
-    return this.send('DELETE', this.resourceUrl('/journeys', uid))
+  removeJourney(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('DELETE', this.resourceUrl('/journeys', uid), identity)
   }
 
-  createFolder(payload: CreateFolderDto): Promise<DownstreamResponse> {
-    return this.send('POST', '/folders', payload)
+  createFolder(payload: CreateFolderDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('POST', '/folders', identity, payload)
   }
 
-  createFoldersBulk(items: ResolvedBulkFolderItem[]): Promise<DownstreamResponse> {
-    return this.send('POST', '/folders/bulk', { items })
+  createFoldersBulk(items: ResolvedBulkFolderItem[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('POST', '/folders/bulk', identity, { items })
   }
 
-  findAllFolders(query: PaginationQueryDto): Promise<DownstreamResponse> {
-    return this.send('GET', '/folders', undefined, query)
+  findAllFolders(query: PaginationQueryDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', '/folders', identity, undefined, query)
   }
 
-  findFolderByUid(uid: string): Promise<DownstreamResponse> {
-    return this.send('GET', this.resourceUrl('/folders', uid))
+  findFolderByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', this.resourceUrl('/folders', uid), identity)
   }
 
-  updateFolder(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
-    return this.send('PATCH', this.resourceUrl('/folders', uid), payload)
+  updateFolder(uid: string, payload: UpdateFolderDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('PATCH', this.resourceUrl('/folders', uid), identity, payload)
   }
 
-  removeFolder(uid: string): Promise<DownstreamResponse> {
-    return this.send('DELETE', this.resourceUrl('/folders', uid))
+  removeFolder(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('DELETE', this.resourceUrl('/folders', uid), identity)
   }
 
-  removeFoldersBulk(ids: string[]): Promise<DownstreamResponse> {
-    return this.send('DELETE', '/folders/bulk', { ids })
+  removeFoldersBulk(ids: string[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('DELETE', '/folders/bulk', identity, { ids })
   }
 
-  createTask(payload: CreateTaskDto): Promise<DownstreamResponse> {
-    return this.send('POST', '/tasks', payload)
+  createTask(payload: CreateTaskDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('POST', '/tasks', identity, payload)
   }
 
-  createTasksBulk(items: ResolvedBulkTaskItem[]): Promise<DownstreamResponse> {
-    return this.send('POST', '/tasks/bulk', { items })
+  createTasksBulk(items: ResolvedBulkTaskItem[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('POST', '/tasks/bulk', identity, { items })
   }
 
-  findAllTasks(query: PaginationQueryDto): Promise<DownstreamResponse> {
-    return this.send('GET', '/tasks', undefined, query)
+  findAllTasks(query: PaginationQueryDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', '/tasks', identity, undefined, query)
   }
 
-  findTaskByUid(uid: string): Promise<DownstreamResponse> {
-    return this.send('GET', this.resourceUrl('/tasks', uid))
+  findTaskByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('GET', this.resourceUrl('/tasks', uid), identity)
   }
 
-  updateTask(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {
-    return this.send('PATCH', this.resourceUrl('/tasks', uid), payload)
+  updateTask(uid: string, payload: UpdateTaskDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('PATCH', this.resourceUrl('/tasks', uid), identity, payload)
   }
 
-  removeTask(uid: string): Promise<DownstreamResponse> {
-    return this.send('DELETE', this.resourceUrl('/tasks', uid))
+  removeTask(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('DELETE', this.resourceUrl('/tasks', uid), identity)
   }
 
-  removeTasksBulk(ids: string[]): Promise<DownstreamResponse> {
-    return this.send('DELETE', '/tasks/bulk', { ids })
+  removeTasksBulk(ids: string[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.send('DELETE', '/tasks/bulk', identity, { ids })
   }
 
   private async send(
     method: string,
     path: string,
+    identity: AuthenticatedIdentity,
     payload?: object,
     query?: PaginationQueryDto
   ): Promise<DownstreamResponse> {
@@ -120,7 +136,11 @@ export class MsJourneysClient {
       const response = await this.http.request<Response>(this.url(path), {
         method,
         ...(query === undefined ? {} : { query: query as unknown as HttpQuery }),
-        headers: { accept: 'application/json' },
+        headers: {
+          accept: 'application/json',
+          'X-API-Key': this.apiKey,
+          'X-User-Id': identity.sub
+        },
         ...(payload === undefined ? {} : { json: payload }),
         responseType: 'response',
         retry: false,

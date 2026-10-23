@@ -17,39 +17,40 @@ export class TasksService {
   constructor(private readonly client: MsJourneysClient) {}
 
   create(payload: CreateTaskDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
-    return this.client.createTask({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
+    return this.client.createTask({ ...payload, parent: resolveParent(payload.parent, identity.sub) }, identity)
   }
 
   async createBulk(items: BulkCreateTaskItemDto[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
     const resolvedItems = items.map((item) => ({ ...item, parent: resolveParent(item.parent, identity.sub) }))
-    return this.client.createTasksBulk(resolvedItems)
+    return this.client.createTasksBulk(resolvedItems, identity)
   }
 
   async findAll(
-    query: PaginationQueryDto
+    query: PaginationQueryDto,
+    identity: AuthenticatedIdentity
   ): Promise<DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>> {
     const page = Number(query.page)
     const size = effectivePageSize(Number(query.size))
-    const result = await this.client.findAllTasks({ page, size })
+    const result = await this.client.findAllTasks({ page, size }, identity)
     if (result.status < 200 || result.status >= 300)
       return result as DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>
     const collection = parseCollectionResult(result.body)
     return { ...result, body: buildCollectionResponse(collection.items, collection.totalRecords, page, size, {}) }
   }
 
-  findByUid(uid: string): Promise<DownstreamResponse> {
-    return this.client.findTaskByUid(uid)
+  findByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.findTaskByUid(uid, identity)
   }
 
-  update(uid: string, payload: UpdateTaskDto): Promise<DownstreamResponse> {
-    return this.client.updateTask(uid, payload)
+  update(uid: string, payload: UpdateTaskDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.updateTask(uid, payload, identity)
   }
 
-  remove(uid: string): Promise<DownstreamResponse> {
-    return this.client.removeTask(uid)
+  remove(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.removeTask(uid, identity)
   }
 
-  deleteBulk(ids: string[]): Promise<DownstreamResponse> {
-    return this.client.removeTasksBulk(ids)
+  deleteBulk(ids: string[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.removeTasksBulk(ids, identity)
   }
 }

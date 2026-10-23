@@ -22,16 +22,19 @@ describe('JourneysService', () => {
     const service = new JourneysService(client, {} as never, {} as never)
 
     await service.create({ name: 'Journey', parent: { type: 'journey', uid: 'journey-1' } }, { sub: 'user-1' })
-    await service.findAll({ page: 1, size: 20 })
-    await service.findByUid('journey-1')
-    await service.update('journey-1', { name: 'Updated' })
-    await service.remove('journey-1')
+    await service.findAll({ page: 1, size: 20 }, { sub: 'user-1' })
+    await service.findByUid('journey-1', { sub: 'user-1' })
+    await service.update('journey-1', { name: 'Updated' }, { sub: 'user-1' })
+    await service.remove('journey-1', { sub: 'user-1' })
 
-    expect(createJourney).toHaveBeenCalledWith({ name: 'Journey', parent: { type: 'journey', uid: 'journey-1' } })
-    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 20 })
-    expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
-    expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })
-    expect(removeJourney).toHaveBeenCalledWith('journey-1')
+    expect(createJourney).toHaveBeenCalledWith(
+      { name: 'Journey', parent: { type: 'journey', uid: 'journey-1' } },
+      { sub: 'user-1' }
+    )
+    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 20 }, { sub: 'user-1' })
+    expect(findJourneyByUid).toHaveBeenCalledWith('journey-1', { sub: 'user-1' })
+    expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' }, { sub: 'user-1' })
+    expect(removeJourney).toHaveBeenCalledWith('journey-1', { sub: 'user-1' })
   })
 
   it('creates a Journey, Folders, and one combined Task batch in order', async () => {
@@ -72,12 +75,15 @@ describe('JourneysService', () => {
     )
 
     expect(result).toBe(journeyResult)
-    expect(createJourney).toHaveBeenCalledWith({
-      description: undefined,
-      metadata: undefined,
-      name: 'Journey',
-      parent: { uid: 'user-1', type: 'user' }
-    })
+    expect(createJourney).toHaveBeenCalledWith(
+      {
+        description: undefined,
+        metadata: undefined,
+        name: 'Journey',
+        parent: { uid: 'user-1', type: 'user' }
+      },
+      { sub: 'user-1' }
+    )
     expect(createFoldersBulk).toHaveBeenCalledWith(
       [
         {
@@ -145,7 +151,7 @@ describe('JourneysService', () => {
     )
 
     expect(result).toBe(folderFailure)
-    expect(removeJourney).toHaveBeenCalledWith('journey-1')
+    expect(removeJourney).toHaveBeenCalledWith('journey-1', { sub: 'user-1' })
   })
 
   it('compensates by removing the Journey when Task creation throws', async () => {
@@ -166,7 +172,7 @@ describe('JourneysService', () => {
         { sub: 'user-1' }
       )
     ).rejects.toBe(creationError)
-    expect(removeJourney).toHaveBeenCalledWith('journey-1')
+    expect(removeJourney).toHaveBeenCalledWith('journey-1', { sub: 'user-1' })
   })
 
   it('does not compensate when Journey creation fails', async () => {

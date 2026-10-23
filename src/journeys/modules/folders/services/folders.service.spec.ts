@@ -24,18 +24,21 @@ describe('FoldersService', () => {
     const service = new FoldersService(client)
 
     await service.create({ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }, { sub: 'user-1' })
-    await service.findAll({ page: 1, size: 20 })
-    await service.findByUid('folder-1')
-    await service.update('folder-1', { name: 'Updated' })
-    await service.remove('folder-1')
-    await service.deleteBulk(['folder-1', 'folder-2'])
+    await service.findAll({ page: 1, size: 20 }, { sub: 'user-1' })
+    await service.findByUid('folder-1', { sub: 'user-1' })
+    await service.update('folder-1', { name: 'Updated' }, { sub: 'user-1' })
+    await service.remove('folder-1', { sub: 'user-1' })
+    await service.deleteBulk(['folder-1', 'folder-2'], { sub: 'user-1' })
 
-    expect(createFolder).toHaveBeenCalledWith({ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } })
-    expect(findAllFolders).toHaveBeenCalledWith({ page: 1, size: 20 })
-    expect(findFolderByUid).toHaveBeenCalledWith('folder-1')
-    expect(updateFolder).toHaveBeenCalledWith('folder-1', { name: 'Updated' })
-    expect(removeFolder).toHaveBeenCalledWith('folder-1')
-    expect(removeFoldersBulk).toHaveBeenCalledWith(['folder-1', 'folder-2'])
+    expect(createFolder).toHaveBeenCalledWith(
+      { name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } },
+      { sub: 'user-1' }
+    )
+    expect(findAllFolders).toHaveBeenCalledWith({ page: 1, size: 20 }, { sub: 'user-1' })
+    expect(findFolderByUid).toHaveBeenCalledWith('folder-1', { sub: 'user-1' })
+    expect(updateFolder).toHaveBeenCalledWith('folder-1', { name: 'Updated' }, { sub: 'user-1' })
+    expect(removeFolder).toHaveBeenCalledWith('folder-1', { sub: 'user-1' })
+    expect(removeFoldersBulk).toHaveBeenCalledWith(['folder-1', 'folder-2'], { sub: 'user-1' })
   })
 
   it('resolves omitted parents to the authenticated User and preserves resource parents', async () => {
@@ -48,10 +51,13 @@ describe('FoldersService', () => {
       { sub: 'user-1' }
     )
 
-    expect(createFoldersBulk).toHaveBeenCalledWith([
-      { name: 'Owned Folder', parent: { type: 'user', uid: 'user-1' } },
-      { name: 'Journey Folder', parent: { type: 'journey', uid: 'journey-1' } }
-    ])
+    expect(createFoldersBulk).toHaveBeenCalledWith(
+      [
+        { name: 'Owned Folder', parent: { type: 'user', uid: 'user-1' } },
+        { name: 'Journey Folder', parent: { type: 'journey', uid: 'journey-1' } }
+      ],
+      { sub: 'user-1' }
+    )
   })
 
   it('rejects explicit User parents before calling ms-journeys', async () => {

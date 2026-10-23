@@ -50,11 +50,14 @@ export class UserRootController {
   @ApiGatewayTimeoutResponse({ description: 'The ms-journeys request timed out.' })
   @Get('resources/:resourceType/:resourceId')
   async findResource(
-    @CurrentIdentity() _identity: AuthenticatedIdentity,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Param() params: ResourceParamsDto,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.userRootService.findResource(params.resourceType, params.resourceId))
+    return this.writeResponse(
+      response,
+      await this.userRootService.findResource(params.resourceType, params.resourceId, identity)
+    )
   }
 
   @ApiOperation({

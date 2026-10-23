@@ -232,7 +232,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         registers: 2
       })
 
-    expect(findUserRoot).toHaveBeenCalledWith('subject-123')
+    expect(findUserRoot).toHaveBeenCalledWith('subject-123', { sub: 'subject-123' })
   })
 
   it('preserves an upstream root-resource error response', async () => {
@@ -263,7 +263,17 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         }
       })
 
-    expect(findResource).toHaveBeenCalledWith('journey', 'journey-1')
+    expect(findResource).toHaveBeenCalledWith('journey', 'journey-1', { sub: 'subject-123' })
+  })
+
+  it('does not allow a client X-User-Id header to override the JWT subject', async () => {
+    await request(app.getHttpServer())
+      .get('/journeys/journeys/journey-1')
+      .set('Authorization', 'Bearer token')
+      .set('X-User-Id', 'attacker-subject')
+      .expect(200)
+
+    expect(findJourneyByUid).toHaveBeenCalledWith('journey-1', { sub: 'subject-123' })
   })
 
   it('preserves upstream resource errors', async () => {
@@ -289,7 +299,7 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     const body = response.body as { pagination: Record<string, number>; filters: Record<string, never> }
     expect(body.pagination).toMatchObject({ page: 1, size: 200, length: 0, totalRecords: 0, totalPages: 0 })
     expect(body.filters).toEqual({})
-    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 200 })
+    expect(findAllJourneys).toHaveBeenCalledWith({ page: 1, size: 200 }, { sub: 'subject-123' })
 
     for (const size of [1, 50, 200, 201, 2000, 40000]) {
       for (const resource of ['journeys', 'folders', 'tasks']) {
@@ -376,24 +386,33 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .send({ ids: ['task-1', 'task-2'] })
       .expect(204)
 
-    expect(createJourney).toHaveBeenCalledWith({
-      description: undefined,
-      metadata: undefined,
-      name: 'Journey',
-      parent: { type: 'user', uid: 'subject-123' }
-    })
-    expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
-    expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })
-    expect(removeJourney).toHaveBeenCalledWith('journey-1')
-    expect(removeFoldersBulk).toHaveBeenCalledWith(['folder-1', 'folder-2'])
-    expect(removeTasksBulk).toHaveBeenCalledWith(['task-1', 'task-2'])
-    expect(createFolder).toHaveBeenCalledWith({ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } })
-    expect(createTask).toHaveBeenCalledWith({
-      isVisible: true,
-      name: 'Task',
-      parent: { type: 'folder', uid: 'folder-1' },
-      state: 'pending'
-    })
+    expect(createJourney).toHaveBeenCalledWith(
+      {
+        description: undefined,
+        metadata: undefined,
+        name: 'Journey',
+        parent: { type: 'user', uid: 'subject-123' }
+      },
+      { sub: 'subject-123' }
+    )
+    expect(findJourneyByUid).toHaveBeenCalledWith('journey-1', { sub: 'subject-123' })
+    expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' }, { sub: 'subject-123' })
+    expect(removeJourney).toHaveBeenCalledWith('journey-1', { sub: 'subject-123' })
+    expect(removeFoldersBulk).toHaveBeenCalledWith(['folder-1', 'folder-2'], { sub: 'subject-123' })
+    expect(removeTasksBulk).toHaveBeenCalledWith(['task-1', 'task-2'], { sub: 'subject-123' })
+    expect(createFolder).toHaveBeenCalledWith(
+      { name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } },
+      { sub: 'subject-123' }
+    )
+    expect(createTask).toHaveBeenCalledWith(
+      {
+        isVisible: true,
+        name: 'Task',
+        parent: { type: 'folder', uid: 'folder-1' },
+        state: 'pending'
+      },
+      { sub: 'subject-123' }
+    )
   })
 
   it('validates resource-specific payloads', async () => {

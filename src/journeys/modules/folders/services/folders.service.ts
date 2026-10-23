@@ -17,39 +17,40 @@ export class FoldersService {
   constructor(private readonly client: MsJourneysClient) {}
 
   create(payload: CreateFolderDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
-    return this.client.createFolder({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
+    return this.client.createFolder({ ...payload, parent: resolveParent(payload.parent, identity.sub) }, identity)
   }
 
   async createBulk(items: BulkCreateFolderItemDto[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
     const resolvedItems = items.map((item) => ({ ...item, parent: resolveParent(item.parent, identity.sub) }))
-    return this.client.createFoldersBulk(resolvedItems)
+    return this.client.createFoldersBulk(resolvedItems, identity)
   }
 
   async findAll(
-    query: PaginationQueryDto
+    query: PaginationQueryDto,
+    identity: AuthenticatedIdentity
   ): Promise<DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>> {
     const page = Number(query.page)
     const size = effectivePageSize(Number(query.size))
-    const result = await this.client.findAllFolders({ page, size })
+    const result = await this.client.findAllFolders({ page, size }, identity)
     if (result.status < 200 || result.status >= 300)
       return result as DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>
     const collection = parseCollectionResult(result.body)
     return { ...result, body: buildCollectionResponse(collection.items, collection.totalRecords, page, size, {}) }
   }
 
-  findByUid(uid: string): Promise<DownstreamResponse> {
-    return this.client.findFolderByUid(uid)
+  findByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.findFolderByUid(uid, identity)
   }
 
-  update(uid: string, payload: UpdateFolderDto): Promise<DownstreamResponse> {
-    return this.client.updateFolder(uid, payload)
+  update(uid: string, payload: UpdateFolderDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.updateFolder(uid, payload, identity)
   }
 
-  remove(uid: string): Promise<DownstreamResponse> {
-    return this.client.removeFolder(uid)
+  remove(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.removeFolder(uid, identity)
   }
 
-  deleteBulk(ids: string[]): Promise<DownstreamResponse> {
-    return this.client.removeFoldersBulk(ids)
+  deleteBulk(ids: string[], identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.removeFoldersBulk(ids, identity)
   }
 }

@@ -27,7 +27,7 @@ export class JourneysService {
   ) {}
 
   create(payload: CreateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
-    return this.client.createJourney({ ...payload, parent: resolveParent(payload.parent, identity.sub) })
+    return this.client.createJourney({ ...payload, parent: resolveParent(payload.parent, identity.sub) }, identity)
   }
 
   async compose(payload: ComposeJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
@@ -60,7 +60,7 @@ export class JourneysService {
         const folderResult = await this.foldersService.createBulk(folderItems, identity)
 
         if (!this.isSuccessful(folderResult)) {
-          await this.compensateJourney(journeyUid)
+          await this.compensateJourney(journeyUid, identity)
           return folderResult
         }
 
@@ -89,40 +89,41 @@ export class JourneysService {
       if (taskItems.length > 0) {
         const taskResult = await this.tasksService.createBulk(taskItems, identity)
         if (!this.isSuccessful(taskResult)) {
-          await this.compensateJourney(journeyUid)
+          await this.compensateJourney(journeyUid, identity)
           return taskResult
         }
       }
 
       return journeyResult
     } catch (error: unknown) {
-      await this.compensateJourney(journeyUid)
+      await this.compensateJourney(journeyUid, identity)
       throw error
     }
   }
 
   async findAll(
-    query: PaginationQueryDto
+    query: PaginationQueryDto,
+    identity: AuthenticatedIdentity
   ): Promise<DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>> {
     const page = Number(query.page)
     const size = effectivePageSize(Number(query.size))
-    const result = await this.client.findAllJourneys({ page, size })
+    const result = await this.client.findAllJourneys({ page, size }, identity)
     if (result.status < 200 || result.status >= 300)
       return result as DownstreamResponse<CollectionResponse<unknown, Record<string, never>>>
     const collection = parseCollectionResult(result.body)
     return { ...result, body: buildCollectionResponse(collection.items, collection.totalRecords, page, size, {}) }
   }
 
-  findByUid(uid: string): Promise<DownstreamResponse> {
-    return this.client.findJourneyByUid(uid)
+  findByUid(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.findJourneyByUid(uid, identity)
   }
 
-  update(uid: string, payload: UpdateJourneyDto): Promise<DownstreamResponse> {
-    return this.client.updateJourney(uid, payload)
+  update(uid: string, payload: UpdateJourneyDto, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.updateJourney(uid, payload, identity)
   }
 
-  remove(uid: string): Promise<DownstreamResponse> {
-    return this.client.removeJourney(uid)
+  remove(uid: string, identity: AuthenticatedIdentity): Promise<DownstreamResponse> {
+    return this.client.removeJourney(uid, identity)
   }
 
   private validateComposeFolders(folders: ComposeFolderDto[] | undefined): void {
@@ -165,9 +166,9 @@ export class JourneysService {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 
-  private async compensateJourney(uid: string): Promise<void> {
+  private async compensateJourney(uid: string, identity: AuthenticatedIdentity): Promise<void> {
     try {
-      const result = await this.remove(uid)
+      const result = await this.remove(uid, identity)
       if (!this.isSuccessful(result)) {
         this.logger.error(`Compose Journey compensation failed for ${uid}: DELETE returned ${result.status}`)
       }

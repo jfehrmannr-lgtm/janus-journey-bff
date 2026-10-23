@@ -23,7 +23,7 @@ export class UserRootService {
   constructor(private readonly client: MsJourneysClient) {}
 
   async findRoot(identity: AuthenticatedIdentity): Promise<DownstreamResponse<UserRootResponseDto>> {
-    const result = await this.client.findUserRoot(identity.sub)
+    const result = await this.client.findUserRoot(identity.sub, identity)
 
     if (result.status < 200 || result.status >= 300) {
       return result as DownstreamResponse<UserRootResponseDto>
@@ -40,8 +40,12 @@ export class UserRootService {
     }
   }
 
-  async findResource(resourceType: ResourceType, resourceId: string): Promise<DownstreamResponse<ResourceResponseDto>> {
-    const result = await this.client.findResource(resourceType, resourceId)
+  async findResource(
+    resourceType: ResourceType,
+    resourceId: string,
+    identity: AuthenticatedIdentity
+  ): Promise<DownstreamResponse<ResourceResponseDto>> {
+    const result = await this.client.findResource(resourceType, resourceId, identity)
 
     if (result.status < 200 || result.status >= 300) {
       return result as DownstreamResponse<ResourceResponseDto>

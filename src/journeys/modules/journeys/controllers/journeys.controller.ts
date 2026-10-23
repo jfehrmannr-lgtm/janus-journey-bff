@@ -70,8 +70,12 @@ export class JourneysController {
     type: JourneysCollectionResponseDto
   })
   @Get()
-  async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.findAll(query))
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.journeysService.findAll(query, identity))
   }
 
   @ApiOperation({ summary: 'Get a Journey resource by UID' })
@@ -79,8 +83,12 @@ export class JourneysController {
   @ApiResponse({ status: 200, type: JourneyResponseDto })
   @ApiNotFoundResponse({ description: 'The Journey resource was not found.' })
   @Get(':uid')
-  async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.findByUid(uid))
+  async findByUid(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.journeysService.findByUid(uid, identity))
   }
 
   @ApiOperation({ summary: 'Partially update a Journey resource by UID' })
@@ -92,9 +100,10 @@ export class JourneysController {
   async update(
     @Param('uid') uid: string,
     @Body() payload: UpdateJourneyDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.update(uid, payload))
+    return this.writeResponse(response, await this.journeysService.update(uid, payload, identity))
   }
 
   @ApiOperation({ summary: 'Delete a Journey resource by UID' })
@@ -103,8 +112,12 @@ export class JourneysController {
   @ApiNotFoundResponse({ description: 'The Journey resource was not found.' })
   @Delete(':uid')
   @HttpCode(204)
-  async remove(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.journeysService.remove(uid))
+  async remove(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.journeysService.remove(uid, identity))
   }
 
   private writeResponse(response: Response, result: DownstreamResponse): unknown {

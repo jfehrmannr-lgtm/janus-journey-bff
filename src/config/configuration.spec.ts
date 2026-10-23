@@ -10,7 +10,8 @@ describe('validateEnvironment', () => {
       MS_USERS_BASE_URL: 'http://localhost:4001',
       MS_USERS_TIMEOUT_MS: '2500',
       MS_JOURNEYS_BASE_URL: 'http://localhost:4002',
-      MS_JOURNEYS_TIMEOUT_MS: '3500'
+      MS_JOURNEYS_TIMEOUT_MS: '3500',
+      MS_JOURNEYS_API_KEY: 'journeys-key'
     })
 
     expect(config.PORT).toBe(4000)

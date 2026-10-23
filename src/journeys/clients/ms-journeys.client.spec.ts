@@ -9,7 +9,8 @@ const createClient = (request: ReturnType<typeof jest.fn>): MsJourneysClient => 
     getOrThrow: (key: string) =>
       ({
         MS_JOURNEYS_BASE_URL: 'http://localhost:4002/',
-        MS_JOURNEYS_TIMEOUT_MS: 5000
+        MS_JOURNEYS_TIMEOUT_MS: 5000,
+        MS_JOURNEYS_API_KEY: 'journey-service-api-key'
       })[key]
   } as unknown as ConfigService
 
@@ -23,13 +24,15 @@ const response = (body: unknown = { uid: 'journey-1' }, status = 200) => ({
   })
 })
 
+const identity = { sub: 'subject-1' }
+
 describe('MsJourneysClient', () => {
   it('forwards bulk deletion payloads to the corresponding resource endpoints', async () => {
     const request = jest.fn().mockImplementation(() => Promise.resolve(response(undefined, 204)))
     const client = createClient(request)
 
-    await client.removeFoldersBulk(['folder-1', 'folder-2'])
-    await client.removeTasksBulk(['task-1', 'task-2'])
+    await client.removeFoldersBulk(['folder-1', 'folder-2'], identity)
+    await client.removeTasksBulk(['task-1', 'task-2'], identity)
 
     expect(
       request.mock.calls.map(([url, options]) => ({
@@ -47,18 +50,19 @@ describe('MsJourneysClient', () => {
     const request = jest.fn().mockImplementation(() => Promise.resolve(response()))
     const client = createClient(request)
 
-    await client.createJourney({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } })
-    await client.createFoldersBulk([{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }])
-    await client.findAllFolders()
-    await client.createTasksBulk([
-      { isVisible: true, name: 'Task', parent: { type: 'user', uid: 'user-1' }, state: 'pending' }
-    ])
-    await client.findTaskByUid('task/1')
-    await client.findUserRoot('user/1')
-    await client.findResource('journey', 'journey/1')
-    await client.updateJourney('journey-1', { name: 'Updated' })
-    await client.updateFolder('folder-1', { metadata: { source: 'test' } })
-    await client.removeTask('task-1')
+    await client.createJourney({ name: 'Journey', parent: { type: 'user', uid: 'user-1' } }, identity)
+    await client.createFoldersBulk([{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }], identity)
+    await client.findAllFolders({ page: 1, size: 20 }, identity)
+    await client.createTasksBulk(
+      [{ isVisible: true, name: 'Task', parent: { type: 'user', uid: 'user-1' }, state: 'pending' }],
+      identity
+    )
+    await client.findTaskByUid('task/1', identity)
+    await client.findUserRoot('user/1', identity)
+    await client.findResource('journey', 'journey/1', identity)
+    await client.updateJourney('journey-1', { name: 'Updated' }, identity)
+    await client.updateFolder('folder-1', { metadata: { source: 'test' } }, identity)
+    await client.removeTask('task-1', identity)
 
     expect(
       request.mock.calls.map(([url, options]) => ({
@@ -79,7 +83,17 @@ describe('MsJourneysClient', () => {
     ])
 
     const [, options] = request.mock.calls[0] as unknown as [string, { headers: Record<string, string> }]
-    expect(options.headers).toEqual({ accept: 'application/json' })
+    expect(options.headers).toEqual({
+      accept: 'application/json',
+      'X-API-Key': 'journey-service-api-key',
+      'X-User-Id': 'subject-1'
+    })
+    for (const [, requestOptions] of request.mock.calls) {
+      expect((requestOptions as { headers: Record<string, string> }).headers).toMatchObject({
+        'X-API-Key': 'journey-service-api-key',
+        'X-User-Id': 'subject-1'
+      })
+    }
 
     expect((request.mock.calls[1][1] as { json: unknown }).json).toEqual({
       items: [{ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } }]
@@ -93,7 +107,7 @@ describe('MsJourneysClient', () => {
     const request = jest.fn().mockResolvedValue(response({ message: 'not found' }, 404))
     const client = createClient(request)
 
-    await expect(client.findJourneyByUid('missing')).resolves.toMatchObject({
+    await expect(client.findJourneyByUid('missing', identity)).resolves.toMatchObject({
       body: { message: 'not found' },
       status: 404
     })
@@ -105,6 +119,21 @@ describe('MsJourneysClient', () => {
       )
     const timeoutClient = createClient(timeoutRequest)
 
-    await expect(timeoutClient.findAllJourneys()).rejects.toMatchObject({ status: 504 })
+    await expect(timeoutClient.findAllJourneys({ page: 1, size: 20 }, identity)).rejects.toMatchObject({ status: 504 })
+  })
+
+  it('fails construction when the internal API key is missing', () => {
+    const http = { request: jest.fn() } as unknown as HttpClient
+    const config = {
+      getOrThrow: (key: string) =>
+        key === 'MS_JOURNEYS_API_KEY'
+          ? undefined
+          : {
+              MS_JOURNEYS_BASE_URL: 'http://localhost:4002',
+              MS_JOURNEYS_TIMEOUT_MS: 5000
+            }[key]
+    } as unknown as ConfigService
+
+    expect(() => new MsJourneysClient(http, config)).toThrow()
   })
 })

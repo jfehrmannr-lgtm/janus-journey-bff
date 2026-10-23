@@ -12,7 +12,7 @@ describe('UserRootService', () => {
 
     const result = await service.findRoot({ sub: 'subject-123' })
 
-    expect(findUserRoot).toHaveBeenCalledWith('subject-123')
+    expect(findUserRoot).toHaveBeenCalledWith('subject-123', { sub: 'subject-123' })
     expect(result.body).toEqual({ payload: { folders: [], journeys: [], tasks: [] }, registers: 0 })
   })
 
@@ -24,12 +24,12 @@ describe('UserRootService', () => {
     })
     const service = new UserRootService({ findResource } as never)
 
-    await expect(service.findResource('journey', 'journey-1')).resolves.toEqual({
+    await expect(service.findResource('journey', 'journey-1', { sub: 'subject-123' })).resolves.toEqual({
       body: { payload: { uid: 'journey-1', type: 'journey', folders: [], tasks: [] } },
       headers: {},
       status: 200
     })
-    expect(findResource).toHaveBeenCalledWith('journey', 'journey-1')
+    expect(findResource).toHaveBeenCalledWith('journey', 'journey-1', { sub: 'subject-123' })
   })
 
   it('preserves resource retrieval errors from ms-journeys', async () => {
@@ -40,7 +40,7 @@ describe('UserRootService', () => {
     })
     const service = new UserRootService({ findResource } as never)
 
-    await expect(service.findResource('folder', 'folder-1')).resolves.toEqual({
+    await expect(service.findResource('folder', 'folder-1', { sub: 'subject-123' })).resolves.toEqual({
       body: { message: 'resource unavailable' },
       headers: {},
       status: 502

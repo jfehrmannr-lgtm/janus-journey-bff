@@ -112,8 +112,12 @@ export class TasksController {
     type: TasksCollectionResponseDto
   })
   @Get()
-  async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.findAll(query))
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.findAll(query, identity))
   }
 
   @ApiOperation({ summary: 'Get a Task resource by UID' })
@@ -121,8 +125,12 @@ export class TasksController {
   @ApiResponse({ status: 200, type: TaskResponseDto })
   @ApiNotFoundResponse({ description: 'The Task resource was not found.' })
   @Get(':uid')
-  async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.findByUid(uid))
+  async findByUid(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.findByUid(uid, identity))
   }
 
   @ApiOperation({ summary: 'Partially update a Task resource by UID' })
@@ -134,9 +142,10 @@ export class TasksController {
   async update(
     @Param('uid') uid: string,
     @Body() payload: UpdateTaskDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.update(uid, payload))
+    return this.writeResponse(response, await this.tasksService.update(uid, payload, identity))
   }
 
   @ApiOperation({ summary: 'Bulk delete Task resources' })
@@ -147,9 +156,10 @@ export class TasksController {
   @HttpCode(204)
   async deleteBulk(
     @Body() payload: BulkDeleteTaskDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.deleteBulk(payload.ids))
+    return this.writeResponse(response, await this.tasksService.deleteBulk(payload.ids, identity))
   }
 
   @ApiOperation({ summary: 'Delete a Task resource by UID' })
@@ -158,8 +168,12 @@ export class TasksController {
   @ApiNotFoundResponse({ description: 'The Task resource was not found.' })
   @Delete(':uid')
   @HttpCode(204)
-  async remove(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.tasksService.remove(uid))
+  async remove(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.remove(uid, identity))
   }
 
   private writeResponse(response: Response, result: DownstreamResponse, body?: unknown): unknown {

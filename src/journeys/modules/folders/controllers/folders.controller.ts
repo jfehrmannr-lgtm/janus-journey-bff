@@ -95,8 +95,12 @@ export class FoldersController {
     type: FoldersCollectionResponseDto
   })
   @Get()
-  async findAll(@Query() query: PaginationQueryDto, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.findAll(query))
+  async findAll(
+    @Query() query: PaginationQueryDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.findAll(query, identity))
   }
 
   @ApiOperation({ summary: 'Get a Folder resource by UID' })
@@ -104,8 +108,12 @@ export class FoldersController {
   @ApiResponse({ status: 200, type: FolderResponseDto })
   @ApiNotFoundResponse({ description: 'The Folder resource was not found.' })
   @Get(':uid')
-  async findByUid(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.findByUid(uid))
+  async findByUid(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.findByUid(uid, identity))
   }
 
   @ApiOperation({ summary: 'Partially update a Folder resource by UID' })
@@ -117,9 +125,10 @@ export class FoldersController {
   async update(
     @Param('uid') uid: string,
     @Body() payload: UpdateFolderDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.update(uid, payload))
+    return this.writeResponse(response, await this.foldersService.update(uid, payload, identity))
   }
 
   @ApiOperation({ summary: 'Bulk delete Folder resources' })
@@ -130,9 +139,10 @@ export class FoldersController {
   @HttpCode(204)
   async deleteBulk(
     @Body() payload: BulkDeleteFolderDto,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.deleteBulk(payload.ids))
+    return this.writeResponse(response, await this.foldersService.deleteBulk(payload.ids, identity))
   }
 
   @ApiOperation({ summary: 'Delete a Folder resource by UID' })
@@ -141,8 +151,12 @@ export class FoldersController {
   @ApiNotFoundResponse({ description: 'The Folder resource was not found.' })
   @Delete(':uid')
   @HttpCode(204)
-  async remove(@Param('uid') uid: string, @Res({ passthrough: true }) response: Response): Promise<unknown> {
-    return this.writeResponse(response, await this.foldersService.remove(uid))
+  async remove(
+    @Param('uid') uid: string,
+    @CurrentIdentity() identity: AuthenticatedIdentity,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.remove(uid, identity))
   }
 
   private writeResponse(response: Response, result: DownstreamResponse, body?: unknown): unknown {

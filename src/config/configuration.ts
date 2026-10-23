@@ -46,5 +46,6 @@ export const validateEnvironment = (config: Record<string, unknown>): Record<str
   MS_USERS_BASE_URL: requiredUrl(config, 'MS_USERS_BASE_URL'),
   MS_USERS_TIMEOUT_MS: positiveInteger(config, 'MS_USERS_TIMEOUT_MS', 5000),
   MS_JOURNEYS_BASE_URL: requiredUrl(config, 'MS_JOURNEYS_BASE_URL'),
-  MS_JOURNEYS_TIMEOUT_MS: positiveInteger(config, 'MS_JOURNEYS_TIMEOUT_MS', 5000)
+  MS_JOURNEYS_TIMEOUT_MS: positiveInteger(config, 'MS_JOURNEYS_TIMEOUT_MS', 5000),
+  MS_JOURNEYS_API_KEY: requiredString(config, 'MS_JOURNEYS_API_KEY')
 })
