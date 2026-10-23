@@ -10,12 +10,14 @@ describe('TasksService', () => {
     const findTaskByUid = jest.fn().mockResolvedValue({})
     const updateTask = jest.fn().mockResolvedValue({})
     const removeTask = jest.fn().mockResolvedValue({})
+    const removeTasksBulk = jest.fn().mockResolvedValue({})
     const client = {
       createTask,
       findAllTasks,
       findTaskByUid,
       updateTask,
-      removeTask
+      removeTask,
+      removeTasksBulk
     } as unknown as MsJourneysClient
     const service = new TasksService(client)
 
@@ -32,6 +34,7 @@ describe('TasksService', () => {
     await service.findByUid('task-1')
     await service.update('task-1', { isVisible: false })
     await service.remove('task-1')
+    await service.deleteBulk(['task-1', 'task-2'])
 
     expect(createTask).toHaveBeenCalledWith({
       isVisible: true,
@@ -43,6 +46,7 @@ describe('TasksService', () => {
     expect(findTaskByUid).toHaveBeenCalledWith('task-1')
     expect(updateTask).toHaveBeenCalledWith('task-1', { isVisible: false })
     expect(removeTask).toHaveBeenCalledWith('task-1')
+    expect(removeTasksBulk).toHaveBeenCalledWith(['task-1', 'task-2'])
   })
 
   it('resolves omitted parents to the authenticated User and preserves resource parents', async () => {

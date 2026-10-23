@@ -56,12 +56,14 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
   const findFolderByUid = jest.fn()
   const updateFolder = jest.fn()
   const removeFolder = jest.fn()
+  const removeFoldersBulk = jest.fn()
   const createTask = jest.fn()
   const createTasksBulk = jest.fn()
   const findAllTasks = jest.fn()
   const findTaskByUid = jest.fn()
   const updateTask = jest.fn()
   const removeTask = jest.fn()
+  const removeTasksBulk = jest.fn()
 
   beforeEach(async () => {
     verify.mockReset().mockResolvedValue({ sub: 'subject-123' })
@@ -91,12 +93,14 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       findFolderByUid,
       updateFolder,
       removeFolder,
+      removeFoldersBulk,
       createTask,
       createTasksBulk,
       findAllTasks,
       findTaskByUid,
       updateTask,
-      removeTask
+      removeTask,
+      removeTasksBulk
     ]) {
       mock.mockReset().mockResolvedValue(success)
     }
@@ -146,7 +150,9 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     })
     removeJourney.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
     removeFolder.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
+    removeFoldersBulk.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
     removeTask.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
+    removeTasksBulk.mockResolvedValue({ body: undefined, headers: {}, status: 204 })
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule]
@@ -169,8 +175,10 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
         findUserRoot,
         findTaskByUid,
         removeFolder,
+        removeFoldersBulk,
         removeJourney,
         removeTask,
+        removeTasksBulk,
         updateFolder,
         updateJourney,
         updateTask
@@ -339,6 +347,11 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .send({ name: 'Updated' })
       .expect(200)
     await request(app.getHttpServer()).delete('/journeys/folders/folder-1').set(auth).expect(204)
+    await request(app.getHttpServer())
+      .delete('/journeys/folders/bulk')
+      .set(auth)
+      .send({ ids: ['folder-1', 'folder-2'] })
+      .expect(204)
 
     const taskResponse = await request(app.getHttpServer())
       .post('/journeys/tasks')
@@ -357,6 +370,11 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     await request(app.getHttpServer()).put('/journeys/tasks/task-1').set(auth).send({ state: 'completed' }).expect(404)
     await request(app.getHttpServer()).patch('/journeys/tasks/task-1').set(auth).send({ isVisible: false }).expect(200)
     await request(app.getHttpServer()).delete('/journeys/tasks/task-1').set(auth).expect(204)
+    await request(app.getHttpServer())
+      .delete('/journeys/tasks/bulk')
+      .set(auth)
+      .send({ ids: ['task-1', 'task-2'] })
+      .expect(204)
 
     expect(createJourney).toHaveBeenCalledWith({
       description: undefined,
@@ -367,6 +385,8 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
     expect(findJourneyByUid).toHaveBeenCalledWith('journey-1')
     expect(updateJourney).toHaveBeenCalledWith('journey-1', { name: 'Updated' })
     expect(removeJourney).toHaveBeenCalledWith('journey-1')
+    expect(removeFoldersBulk).toHaveBeenCalledWith(['folder-1', 'folder-2'])
+    expect(removeTasksBulk).toHaveBeenCalledWith(['task-1', 'task-2'])
     expect(createFolder).toHaveBeenCalledWith({ name: 'Folder', parent: { type: 'journey', uid: 'journey-1' } })
     expect(createTask).toHaveBeenCalledWith({
       isVisible: true,
@@ -383,6 +403,20 @@ describe('Authenticated ms-journeys flow (e2e)', () => {
       .send({ isVisible: true, name: 'Task', parent: { type: 'folder', uid: 'folder-1' }, state: 'invalid' })
       .expect(400)
     expect(createTask).not.toHaveBeenCalled()
+
+    await request(app.getHttpServer())
+      .delete('/journeys/folders/bulk')
+      .set('Authorization', 'Bearer token')
+      .send({ ids: [] })
+      .expect(400)
+    expect(removeFoldersBulk).not.toHaveBeenCalled()
+
+    await request(app.getHttpServer())
+      .delete('/journeys/tasks/bulk')
+      .set('Authorization', 'Bearer token')
+      .send({ ids: [''] })
+      .expect(400)
+    expect(removeTasksBulk).not.toHaveBeenCalled()
   })
 
   it('uses the required Swagger tags and does not expose MongoDB identifiers', async () => {

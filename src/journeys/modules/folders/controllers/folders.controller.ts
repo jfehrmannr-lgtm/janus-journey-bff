@@ -36,6 +36,7 @@ import {
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 import { BulkCreateFolderItemDto } from '../dto/bulk-create-folder.dto.js'
+import { BulkDeleteFolderDto } from '../dto/bulk-delete-folder.dto.js'
 import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 
@@ -119,6 +120,19 @@ export class FoldersController {
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
     return this.writeResponse(response, await this.foldersService.update(uid, payload))
+  }
+
+  @ApiOperation({ summary: 'Bulk delete Folder resources' })
+  @ApiBody({ type: BulkDeleteFolderDto })
+  @ApiResponse({ description: 'The Folder resources were deleted.', status: 204 })
+  @ApiBadRequestResponse({ description: 'Invalid Folder deletion payload.' })
+  @Delete('bulk')
+  @HttpCode(204)
+  async deleteBulk(
+    @Body() payload: BulkDeleteFolderDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.foldersService.deleteBulk(payload.ids))
   }
 
   @ApiOperation({ summary: 'Delete a Folder resource by UID' })

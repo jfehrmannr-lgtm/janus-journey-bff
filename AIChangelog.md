@@ -1,3 +1,14 @@
+## 2026-10-22
+
+### #JANUS-BFF-0030: Add Bulk Folder and Task Deletion
+
+**Work**: Plan / Build / Validate; Added authenticated BFF orchestration for bulk Folder and Task deletion through the corresponding `ms-journeys` endpoints.
+
+- Added validated `{ ids }` request DTOs with non-empty, unique string arrays.
+- Added `DELETE /journeys/folders/bulk` and `DELETE /journeys/tasks/bulk`, returning downstream `204 No Content` responses without a body.
+- Preserved downstream status/error propagation and kept ownership, transactions, cascading, and persistence logic in `ms-journeys`.
+- Added client, service, validation, endpoint, and delegation coverage without changing single-resource deletion routes.
+
 ## 2026-10-19
 
 ### #JANUS-BFF-0029: Standardize Completed Task State

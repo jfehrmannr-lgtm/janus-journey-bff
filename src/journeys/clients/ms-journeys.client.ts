@@ -78,6 +78,10 @@ export class MsJourneysClient {
     return this.send('DELETE', this.resourceUrl('/folders', uid))
   }
 
+  removeFoldersBulk(ids: string[]): Promise<DownstreamResponse> {
+    return this.send('DELETE', '/folders/bulk', { ids })
+  }
+
   createTask(payload: CreateTaskDto): Promise<DownstreamResponse> {
     return this.send('POST', '/tasks', payload)
   }
@@ -100,6 +104,10 @@ export class MsJourneysClient {
 
   removeTask(uid: string): Promise<DownstreamResponse> {
     return this.send('DELETE', this.resourceUrl('/tasks', uid))
+  }
+
+  removeTasksBulk(ids: string[]): Promise<DownstreamResponse> {
+    return this.send('DELETE', '/tasks/bulk', { ids })
   }
 
   private async send(

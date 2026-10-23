@@ -17,13 +17,32 @@ const createClient = (request: ReturnType<typeof jest.fn>): MsJourneysClient => 
 }
 
 const response = (body: unknown = { uid: 'journey-1' }, status = 200) => ({
-  data: new Response(JSON.stringify(body), {
+  data: new Response(status === 204 ? null : JSON.stringify(body), {
     headers: { 'content-type': 'application/json' },
     status
   })
 })
 
 describe('MsJourneysClient', () => {
+  it('forwards bulk deletion payloads to the corresponding resource endpoints', async () => {
+    const request = jest.fn().mockImplementation(() => Promise.resolve(response(undefined, 204)))
+    const client = createClient(request)
+
+    await client.removeFoldersBulk(['folder-1', 'folder-2'])
+    await client.removeTasksBulk(['task-1', 'task-2'])
+
+    expect(
+      request.mock.calls.map(([url, options]) => ({
+        method: (options as { method: string }).method,
+        url,
+        json: (options as { json: unknown }).json
+      }))
+    ).toEqual([
+      { method: 'DELETE', url: 'http://localhost:4002/folders/bulk', json: { ids: ['folder-1', 'folder-2'] } },
+      { method: 'DELETE', url: 'http://localhost:4002/tasks/bulk', json: { ids: ['task-1', 'task-2'] } }
+    ])
+  })
+
   it('forwards resource-specific CRUD requests using domain UIDs', async () => {
     const request = jest.fn().mockImplementation(() => Promise.resolve(response()))
     const client = createClient(request)

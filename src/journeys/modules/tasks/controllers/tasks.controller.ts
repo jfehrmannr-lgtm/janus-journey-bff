@@ -37,6 +37,7 @@ import {
 import type { DownstreamResponse } from '@journeys/types/ms-journeys.types.js'
 import { PaginationQueryDto } from '@common/collections/pagination-query.dto.js'
 import { BulkCreateTaskItemDto } from '../dto/bulk-create-task.dto.js'
+import { BulkDeleteTaskDto } from '../dto/bulk-delete-task.dto.js'
 import { CurrentIdentity } from '@auth/decorators/current-identity.decorator.js'
 import type { AuthenticatedIdentity } from '@auth/types/authenticated-identity.js'
 
@@ -136,6 +137,19 @@ export class TasksController {
     @Res({ passthrough: true }) response: Response
   ): Promise<unknown> {
     return this.writeResponse(response, await this.tasksService.update(uid, payload))
+  }
+
+  @ApiOperation({ summary: 'Bulk delete Task resources' })
+  @ApiBody({ type: BulkDeleteTaskDto })
+  @ApiResponse({ description: 'The Task resources were deleted.', status: 204 })
+  @ApiBadRequestResponse({ description: 'Invalid Task deletion payload.' })
+  @Delete('bulk')
+  @HttpCode(204)
+  async deleteBulk(
+    @Body() payload: BulkDeleteTaskDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<unknown> {
+    return this.writeResponse(response, await this.tasksService.deleteBulk(payload.ids))
   }
 
   @ApiOperation({ summary: 'Delete a Task resource by UID' })

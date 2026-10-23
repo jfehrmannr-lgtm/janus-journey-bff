@@ -48,4 +48,8 @@ export class TasksService {
   remove(uid: string): Promise<DownstreamResponse> {
     return this.client.removeTask(uid)
   }
+
+  deleteBulk(ids: string[]): Promise<DownstreamResponse> {
+    return this.client.removeTasksBulk(ids)
+  }
 }

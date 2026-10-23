@@ -48,4 +48,8 @@ export class FoldersService {
   remove(uid: string): Promise<DownstreamResponse> {
     return this.client.removeFolder(uid)
   }
+
+  deleteBulk(ids: string[]): Promise<DownstreamResponse> {
+    return this.client.removeFoldersBulk(ids)
+  }
 }
