@@ -34,7 +34,7 @@ export class JourneysService {
     this.validateComposeFolders(payload.folders)
 
     const journeyResult = await this.create(
-      { description: payload.description, metadata: payload.metadata, name: payload.name },
+      { description: payload.description, imgUrl: payload.imgUrl, metadata: payload.metadata, name: payload.name },
       identity
     )
 

@@ -82,6 +82,10 @@ export class ComposeJourneyDto {
   @IsString()
   description?: string | null
 
+  @ApiProperty({ example: '/janus_journey_backgrounds/mount-sunrise.png' })
+  @IsString()
+  imgUrl!: string
+
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
   @IsObject()

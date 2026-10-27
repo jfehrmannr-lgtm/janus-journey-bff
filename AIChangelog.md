@@ -1,3 +1,23 @@
+## 2026-10-27
+
+### #JANUS-BFF-0033: Standardize Journey Swagger Image Examples
+
+**Work**: Document / Validate; Standardized the Journey request and response Swagger examples to show `/janus_journey_backgrounds/mount-sunrise.png` across all Journey endpoints.
+
+## 2026-10-27
+
+### #JANUS-BFF-0032: Require Journey Background Image Paths on Creation
+
+**Work**: Correct / Validate; Made `imgUrl` required on single and composed Journey creation request DTOs and documented it as a required Swagger property.
+
+## 2026-10-27
+
+### #JANUS-BFF-0031: Forward Journey Background Image Paths
+
+**Work**: Plan / Build / Validate; Added optional string `imgUrl` to Journey request and response DTOs and forwarded it through single-resource and composed Journey creation contracts.
+
+- Swagger documents the new request and response property while preserving existing response normalization and downstream status handling.
+
 ## 2026-10-22
 
 ### #JANUS-BFF-0030: Add Bulk Folder and Task Deletion

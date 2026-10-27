@@ -18,6 +18,9 @@ export class JourneyResponseDto {
   @ApiProperty({ example: 'Description for journey', nullable: true, type: String })
   description!: string | null
 
+  @ApiProperty({ example: '/janus_journey_backgrounds/mount-sunrise.png' })
+  imgUrl!: string
+
   @ApiProperty({ type: Object })
   metadata!: Record<string, unknown>
 
