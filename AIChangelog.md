@@ -250,3 +250,13 @@ Prefer correcting the underlying DTO metadata and Swagger decorators rather than
 
 - Named root Journey Tasks and nested Folder Tasks separately before combining them into the existing single bulk request.
 - Preserved task ordering, parent assignment, and downstream request behavior.
+
+## 2026-10-29
+
+### #JANUS-BFF-0036: Forward MS-Users Internal Security Headers
+
+**Work**: Plan / Build / Validate; Aligned the BFF `ms-users` HTTP client with the established `ms-journeys` internal authentication and identity propagation pattern.
+
+- Added required `MS_USERS_API_KEY` configuration validation and timing-independent downstream API-key forwarding.
+- Forwarded `X-User-Id` from the validated `AuthenticatedIdentity` for User collection and resource operations.
+- Kept User registration API-key authenticated without adding `X-User-Id`, while preserving the existing BFF JWT-derived provisioning identity.

@@ -9,6 +9,7 @@ const createClient = (request: ReturnType<typeof jest.fn>): MsUsersClient => {
     getOrThrow: (key: string) =>
       ({
         MS_USERS_BASE_URL: 'http://localhost:4001/',
+        MS_USERS_API_KEY: 'users-key',
         MS_USERS_TIMEOUT_MS: 5000
       })[key]
   } as unknown as ConfigService
@@ -40,7 +41,8 @@ describe('MsUsersClient', () => {
     ]
 
     expect(url).toBe('http://localhost:4001/users')
-    expect(options.headers['x-authenticated-subject']).toBe('subject-1')
+    expect(options.headers['X-API-Key']).toBe('users-key')
+    expect(options.headers['X-User-Id']).toBe('subject-1')
     expect(options.query).toEqual({ page: 2, size: 20 })
     expect(options.throwOnHttpError).toBe(false)
     expect(result).toMatchObject({ body: { userId: 'user-1' }, status: 200 })
@@ -58,6 +60,19 @@ describe('MsUsersClient', () => {
     await client.findById('user-1', { sub: 'subject-1' })
 
     expect(request.mock.calls[0]?.[1]).toEqual(expect.objectContaining({ query: undefined }))
+  })
+
+  it('sends only the internal API key when provisioning a User', async () => {
+    const request = jest.fn().mockResolvedValue({
+      data: new Response(null, { status: 201 })
+    })
+    const client = createClient(request)
+
+    await client.create({ email: 'user@example.com' }, { sub: 'subject-1' })
+
+    const [, options] = request.mock.calls[0] as unknown as [string, { headers: Record<string, string> }]
+    expect(options.headers['X-API-Key']).toBe('users-key')
+    expect(options.headers['X-User-Id']).toBeUndefined()
   })
 
   it('preserves a downstream not-found response', async () => {

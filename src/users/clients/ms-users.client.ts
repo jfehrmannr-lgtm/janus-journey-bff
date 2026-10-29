@@ -6,12 +6,11 @@ import type { DownstreamResponse, AuthenticatedMsUsersRequest, UserPayload } fro
 import type { FindUsersQueryDto } from '../dto/find-users-query.dto.js'
 import type { UpdateUserDto } from '../dto/update-user.dto.js'
 
-export const AUTHENTICATED_SUBJECT_HEADER = 'x-authenticated-subject'
-
 @Injectable()
 export class MsUsersClient {
   private readonly baseUrl: string
   private readonly timeout: number
+  private readonly apiKey: string
 
   constructor(
     private readonly http: HttpClient,
@@ -19,10 +18,17 @@ export class MsUsersClient {
   ) {
     this.baseUrl = config.getOrThrow<string>('MS_USERS_BASE_URL').replace(/\/+$/, '')
     this.timeout = config.getOrThrow<number>('MS_USERS_TIMEOUT_MS')
+    const apiKey = config.getOrThrow<string>('MS_USERS_API_KEY')
+
+    if (typeof apiKey !== 'string' || apiKey.trim() === '') {
+      throw new Error('MS_USERS_API_KEY is required')
+    }
+
+    this.apiKey = apiKey.trim()
   }
 
   create(payload: UserPayload, authenticatedIdentity: AuthenticatedIdentity): Promise<DownstreamResponse> {
-    return this.send('POST', '/users', { authenticatedIdentity }, payload)
+    return this.send('POST', '/users', { authenticatedIdentity }, payload, false)
   }
 
   findAll(authenticatedIdentity: AuthenticatedIdentity, query?: FindUsersQueryDto): Promise<DownstreamResponse> {
@@ -65,7 +71,8 @@ export class MsUsersClient {
     method: string,
     path: string,
     request: AuthenticatedMsUsersRequest,
-    payload?: UserPayload | UpdateUserDto
+    payload?: UserPayload | UpdateUserDto,
+    includeUserId = true
   ): Promise<DownstreamResponse> {
     try {
       const response = await this.http.request<Response>(this.url(path), {
@@ -73,7 +80,8 @@ export class MsUsersClient {
         query: this.toQuery(request),
         headers: {
           accept: 'application/json',
-          [AUTHENTICATED_SUBJECT_HEADER]: request.authenticatedIdentity.sub
+          'X-API-Key': this.apiKey,
+          ...(includeUserId ? { 'X-User-Id': request.authenticatedIdentity.sub } : {})
         },
         ...(payload === undefined ? {} : { json: payload }),
         responseType: 'response',
