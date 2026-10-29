@@ -18,14 +18,40 @@ describe('UserRootService', () => {
 
   it('maps successful resource responses to the BFF payload convention', async () => {
     const findResource = jest.fn().mockResolvedValue({
-      body: { items: { uid: 'journey-1', type: 'journey', folders: [], tasks: [] } },
+      body: {
+        items: {
+          uid: 'journey-1',
+          type: 'journey',
+          folders: [
+            {
+              uid: 'folder-1',
+              progress: { completed: 1, discarded: 0, total: 1, percentage: 100 },
+              tasks: []
+            }
+          ],
+          tasks: []
+        }
+      },
       headers: {},
       status: 200
     })
     const service = new UserRootService({ findResource } as never)
 
     await expect(service.findResource('journey', 'journey-1', { sub: 'subject-123' })).resolves.toEqual({
-      body: { payload: { uid: 'journey-1', type: 'journey', folders: [], tasks: [] } },
+      body: {
+        payload: {
+          uid: 'journey-1',
+          type: 'journey',
+          folders: [
+            {
+              uid: 'folder-1',
+              progress: { completed: 1, discarded: 0, total: 1, percentage: 100 },
+              tasks: []
+            }
+          ],
+          tasks: []
+        }
+      },
       headers: {},
       status: 200
     })

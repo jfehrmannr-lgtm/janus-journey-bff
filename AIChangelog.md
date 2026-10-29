@@ -1,3 +1,16 @@
+## 2026-10-29
+
+### #JANUS-BFF-0035: Synchronize Resource Activity Response Contracts
+
+**Work**: Plan / Build / Validate; Added the server-controlled `lastActivityAt` timestamp to Journey, Folder, and Task BFF response DTOs and their generated Swagger schemas without changing request contracts.
+
+- Nested and collection responses inherit the field through the existing response DTO references.
+- POST and PATCH request DTOs remain unchanged, so clients cannot submit or edit the field.
+
+### #JANUS-BFF-0034: Preserve Folder Progress In Resource Responses
+
+**Work**: Validate; Confirmed the BFF resource envelope preserves the per-Folder progress returned by ms-journeys without recalculating or reshaping domain data.
+
 ## 2026-10-27
 
 ### #JANUS-BFF-0033: Standardize Journey Swagger Image Examples

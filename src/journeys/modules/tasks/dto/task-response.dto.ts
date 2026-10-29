@@ -38,4 +38,7 @@ export class TaskResponseDto {
 
   @ApiProperty({ format: 'date-time' })
   updatedAt!: Date
+
+  @ApiProperty({ example: '2026-10-29T13:56:00.776Z', format: 'date-time' })
+  lastActivityAt!: Date
 }
