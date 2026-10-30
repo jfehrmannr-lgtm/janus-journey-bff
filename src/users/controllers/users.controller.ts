@@ -10,7 +10,7 @@ import { UpdateUserDto } from '../dto/update-user.dto.js'
 import { UsersCollectionResponseDto } from '../dto/users-collection-response.dto.js'
 import { UsersService } from '../services/users.service.js'
 import type { DownstreamResponse } from '../types/ms-users.types.js'
-import { userPayloadSchema, userResponseSchema } from '../types/users-openapi.js'
+import { userPayloadSchema } from '../types/users-openapi.js'
 
 @ApiBearerAuth('bearer')
 @ApiTags('MS Users · Users')
@@ -29,7 +29,7 @@ export class UsersController {
     required: true,
     type: CreateUserDto
   })
-  @ApiResponse({ description: 'User resource created by ms-users.', schema: userResponseSchema, status: 201 })
+  @ApiResponse({ description: 'User resource created by ms-users.', status: 201, type: UserResponseDto })
   @ApiResponse({ description: 'The User violates a uniqueness constraint.', status: 409 })
   @ApiResponse({ description: 'Missing or invalid Better Auth JWT.', status: 401 })
   @ApiResponse({ description: 'The BFF could not obtain a valid response from ms-users.', status: 502 })

@@ -260,3 +260,12 @@ Prefer correcting the underlying DTO metadata and Swagger decorators rather than
 - Added required `MS_USERS_API_KEY` configuration validation and timing-independent downstream API-key forwarding.
 - Forwarded `X-User-Id` from the validated `AuthenticatedIdentity` for User collection and resource operations.
 - Kept User registration API-key authenticated without adding `X-User-Id`, while preserving the existing BFF JWT-derived provisioning identity.
+
+## 2026-10-29
+
+### #JANUS-BFF-0037: Document POST User Response Schema
+
+**Work**: Plan / Build / Validate; Replaced the generic manually defined POST User response schema with the existing `UserResponseDto` Swagger model.
+
+- The `201 Created` response now references the generated `UserResponseDto` schema and exposes the existing User response properties in Swagger UI.
+- Runtime response handling, DTOs, authentication, and downstream contracts remain unchanged.

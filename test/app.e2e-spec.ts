@@ -306,6 +306,9 @@ describe('Authenticated User flow (e2e)', () => {
       type: 'object'
     })
     expect(create?.parameters).toHaveLength(0)
+    expect(create?.responses['201']?.content?.['application/json']?.schema).toEqual({
+      $ref: '#/components/schemas/UserResponseDto'
+    })
     expect(document.paths['/users/{id}']?.patch?.requestBody).toBeDefined()
     expect(document.paths['/users/{id}']?.get?.requestBody).toBeUndefined()
     expect(document.paths['/users/{id}']?.delete?.requestBody).toBeUndefined()
